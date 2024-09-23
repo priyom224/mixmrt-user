@@ -474,7 +474,9 @@ class RouteHelper {
           : Get.parameters['page'] == 'privacy-policy' ? HtmlType.privacyPolicy
           : Get.parameters['page'] == 'shipping-policy' ? HtmlType.shippingPolicy
           : Get.parameters['page'] == 'cancellation-policy' ? HtmlType.cancellation
-          : Get.parameters['page'] == 'refund-policy' ? HtmlType.refund : HtmlType.aboutUs,
+          : Get.parameters['page'] == 'refund-policy' ? HtmlType.refund
+          : Get.parameters['page'] == 'show-agreement-dm' ? HtmlType.dmAgreement
+          : Get.parameters['page'] == 'show-agreement-store' ? HtmlType.storeAgreement : HtmlType.aboutUs,
     )),
     GetPage(name: categories, page: () => getRoute(const CategoryScreen())),
     GetPage(name: categoryItem, page: () {

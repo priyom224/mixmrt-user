@@ -15,7 +15,9 @@ class HtmlRepository implements HtmlRepositoryInterface {
       htmlType == HtmlType.termsAndCondition ? AppConstants.termsAndConditionUri
           : htmlType == HtmlType.privacyPolicy ? AppConstants.privacyPolicyUri : htmlType == HtmlType.aboutUs
           ? AppConstants.aboutUsUri : htmlType == HtmlType.shippingPolicy ? AppConstants.shippingPolicyUri
-          : htmlType == HtmlType.cancellation ? AppConstants.cancellationUri : AppConstants.refundUri,
+          : htmlType == HtmlType.cancellation ? AppConstants.cancellationUri
+          : htmlType == HtmlType.dmAgreement ? AppConstants.dmAgreement
+          : htmlType == HtmlType.storeAgreement ? AppConstants.storeAgreement : AppConstants.refundUri,
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',

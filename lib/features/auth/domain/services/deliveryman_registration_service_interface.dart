@@ -12,5 +12,5 @@ abstract class DeliverymanRegistrationServiceInterface{
   Future<List<DeliveryManVehicleModel>?> getVehicleList();
   List<int?>? prepareVehicleIds(List<DeliveryManVehicleModel>? vehicleList);
   Future<void> registerDeliveryMan(DeliveryManBody deliveryManBody, List<MultipartBody> multiParts);
-  List<MultipartBody> prepareMultipart(XFile? pickedImage, List<XFile> pickedIdentities, XFile? pickedAgreement);
+  List<MultipartBody> prepareMultipart(XFile? pickedImage, List<XFile> pickedIdentities);
 }

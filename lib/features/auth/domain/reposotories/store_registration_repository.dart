@@ -10,10 +10,10 @@ class StoreRegistrationRepository implements StoreRegistrationRepositoryInterfac
   StoreRegistrationRepository({required this.apiClient});
 
   @override
-  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration, XFile? pickedAgreement) async {
+  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration) async {
     Response response = await apiClient.postMultipartData(
       AppConstants.storeRegisterUri, store.toJson(), [MultipartBody('logo', logo), MultipartBody('cover_photo', cover),
-      MultipartBody('tax_document', pickedTax), MultipartBody('registration_document', pickedRegistration), MultipartBody('agreement_document', pickedAgreement)],
+      MultipartBody('tax_document', pickedTax), MultipartBody('registration_document', pickedRegistration)],
     );
     return response;
   }

@@ -34,8 +34,9 @@ class _HtmlViewerScreenState extends State<HtmlViewerScreen> {
       appBar: CustomAppBar(title: widget.htmlType == HtmlType.termsAndCondition ? 'terms_conditions'.tr
           : widget.htmlType == HtmlType.aboutUs ? 'about_us'.tr : widget.htmlType == HtmlType.privacyPolicy
           ? 'privacy_policy'.tr : widget.htmlType == HtmlType.shippingPolicy ? 'shipping_policy'.tr
-          : widget.htmlType == HtmlType.refund ? 'refund_policy'.tr :  widget.htmlType == HtmlType.cancellation
-          ? 'cancellation_policy'.tr : 'no_data_found'.tr),
+          : widget.htmlType == HtmlType.refund ? 'refund_policy'.tr :  widget.htmlType == HtmlType.cancellation ? 'cancellation_policy'.tr
+          : (widget.htmlType == HtmlType.dmAgreement) || (widget.htmlType == HtmlType.storeAgreement) ? 'contact'.tr
+          : 'no_data_found'.tr),
       endDrawer: const MenuDrawer(),endDrawerEnableOpenDragGesture: false,
       body: GetBuilder<HtmlController>(builder: (htmlController) {
         return Center(

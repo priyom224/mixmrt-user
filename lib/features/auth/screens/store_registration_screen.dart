@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 import 'package:sixam_mart/common/widgets/confirmation_dialog.dart';
 import 'package:sixam_mart/common/widgets/custom_asset_image_widget.dart';
 import 'package:sixam_mart/common/widgets/custom_tool_tip_widget.dart';
+import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
+import 'package:sixam_mart/features/auth/widgets/condition_check_box_widget.dart';
 import 'package:sixam_mart/features/auth/widgets/module_view_widget.dart';
 import 'package:sixam_mart/features/auth/widgets/web_registration_stepper_widget.dart';
 import 'package:sixam_mart/features/dashboard/screens/dashboard_screen.dart';
@@ -419,11 +421,12 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                             padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeDefault),
                             child: Column(children: [
 
-                              Row(
+                             /* Row(
                                 children: [
                                   Expanded(
                                     child: CustomTextField(
                                       titleText: 'tax_id'.tr,
+                                      showLabelText: false,
                                       controller: _taxIdController,
                                       focusNode: _taxIdFocus,
                                       nextFocus: _registrationNoFocus,
@@ -442,12 +445,22 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                                     ),
                                   ) : const SizedBox(),
                                 ],
+                              ),*/
+                              CustomTextField(
+                                titleText: 'tax_id'.tr,
+                                showLabelText: false,
+                                controller: _taxIdController,
+                                focusNode: _taxIdFocus,
+                                nextFocus: _registrationNoFocus,
+                                inputAction: TextInputAction.done,
+                                inputType: TextInputType.text,
                               ),
                               const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
 
                               CustomTextField(
                                 titleText: 'registration_no'.tr,
+                                showLabelText: false,
                                 controller: _registrationNoController,
                                 focusNode: _registrationNoFocus,
                                 nextFocus: _vatFocus,
@@ -537,7 +550,7 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                                 ]),),
                               ],),  const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
-                              Row(children: [
+                             /* Row(children: [
                                 Expanded(flex: 10, child: Stack(children: [
                                   Padding(
                                     padding: const EdgeInsets.all(5.0),
@@ -575,7 +588,7 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                                     ),
                                   ),
                                 ]),),
-                              ],),  const SizedBox(height: Dimensions.paddingSizeExtraLarge),
+                              ],),  const SizedBox(height: Dimensions.paddingSizeExtraLarge),*/
 
                               CustomTextField(
                                 titleText: 'write_vat_tax_amount'.tr,
@@ -780,6 +793,15 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                               // const SizedBox(height: Dimensions.paddingSizeExtraLarge),
                             ]),
                           ),
+                          const SizedBox(height: Dimensions.paddingSizeDefault),
+
+                          const ConditionCheck(isStoreAgreement: true),
+                          const SizedBox(height: Dimensions.paddingSizeDefault),
+
+                          const ConditionCheckBoxWidget(forDeliveryMan: true, forSignUp: false, forStore: true),
+                          const SizedBox(height: Dimensions.paddingSizeDefault),
+
+                          const ConditionCheck(),
 
                         ]),
                       ),
@@ -1340,165 +1362,171 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
 
   Widget buttonView(){
     return GetBuilder<StoreRegistrationController>(builder: (storeRegController) {
-      return Container(
-        padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isDesktop(context) ? 0 : Dimensions.paddingSizeDefault),
-        decoration: ResponsiveHelper.isDesktop(context) ? null : BoxDecoration(
-          color: Theme.of(context).cardColor,
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)],
-        ),
-        child: CustomButton(
-          fontSize: ResponsiveHelper.isDesktop(context) ? Dimensions.fontSizeSmall : Dimensions.fontSizeDefault,
-          isBold: ResponsiveHelper.isDesktop(context) ? false : true,
-          radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
-          isLoading: storeRegController.isLoading,
-          margin: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 0 : Dimensions.paddingSizeSmall),
-          buttonText: storeRegController.storeStatus == 0.1 && !ResponsiveHelper.isDesktop(context) ? 'next'.tr : 'submit'.tr,
-          color: /*ResponsiveHelper.isDesktop(context) ? Theme.of(context).disabledColor.withOpacity(0.9) :*/ Theme.of(context).primaryColor,
-          onPressed: (storeRegController.storeStatus == 0.1 && !ResponsiveHelper.isDesktop(context) && !storeRegController.inZone)
-              || (ResponsiveHelper.isDesktop(context) && !storeRegController.inZone) ? null :() {
-            bool defaultDataNull = false;
-            for(int index=0; index<_languageList!.length; index++) {
-              if(_languageList[index].key == 'en') {
-                if (_nameController[index].text.trim().isEmpty || _addressController[index].text.trim().isEmpty) {
-                  defaultDataNull = true;
-                }
-                break;
-              }
-            }
-            String taxId = _taxIdController.text.trim();
-            String regiNo = _registrationNoController.text.trim();
-            String vat = _vatController.text.trim();
-            String minTime = storeRegController.storeMinTime;
-            String maxTime = storeRegController.storeMaxTime;
-            String fName = _fNameController.text.trim();
-            String lName = _lNameController.text.trim();
-            String phone = _phoneController.text.trim();
-            String email = _emailController.text.trim();
-            String password = _passwordController.text.trim();
-            String confirmPassword = _confirmPasswordController.text.trim();
-            bool valid = false;
-            try {
-              double.parse(maxTime);
-              double.parse(minTime);
-              valid = true;
-            } on FormatException {
-              valid = false;
-            }
+      return GetBuilder<AuthController>(builder: (authController) {
 
-            if(storeRegController.storeStatus == 0.1 && !ResponsiveHelper.isDesktop(context)){
-              if(_formKeyFirst!.currentState!.validate()){
-                if(defaultDataNull) {
-                  showCustomSnackBar('enter_store_name'.tr);
-                }else if(storeRegController.pickedLogo == null) {
-                  showCustomSnackBar('select_store_logo'.tr);
-                }else if(storeRegController.pickedCover == null) {
-                  showCustomSnackBar('select_store_cover_photo'.tr);
-                }else if(storeRegController.selectedZoneIndex == -1) {
-                  showCustomSnackBar('please_select_zone'.tr);
-                }else if(storeRegController.selectedModuleIndex == -1) {
-                  showCustomSnackBar('please_select_module_first'.tr);
-                }else if(storeRegController.restaurantLocation == null) {
-                  showCustomSnackBar('set_store_location'.tr);
-                }else if(taxId.isEmpty){
-                  showCustomSnackBar('enter_tax_id_info'.tr);
-                }else if(regiNo.isEmpty){
-                  showCustomSnackBar('enter_regi_no_info'.tr);
-                }else if(storeRegController.pickedTax == null){
-                  showCustomSnackBar('upload_tax_document'.tr);
-                }else if(storeRegController.pickedRegistration == null){
-                  showCustomSnackBar('upload_registration_document'.tr);
-                }else if(storeRegController.pickedAgreement == null){
-                  showCustomSnackBar('upload_agreement_document'.tr);
-                }else if(vat.isEmpty) {
-                  showCustomSnackBar('enter_vat_amount'.tr);
-                }else if(minTime.isEmpty) {
-                  showCustomSnackBar('enter_minimum_delivery_time'.tr);
-                }else if(maxTime.isEmpty) {
-                  showCustomSnackBar('enter_maximum_delivery_time'.tr);
-                }else if(!valid) {
-                  showCustomSnackBar('please_enter_the_max_min_delivery_time'.tr);
-                }else if(valid && double.parse(minTime) > double.parse(maxTime)) {
-                  showCustomSnackBar('maximum_delivery_time_can_not_be_smaller_then_minimum_delivery_time'.tr);
-                }else{
-                  _scrollController.jumpTo(_scrollController.position.minScrollExtent);
-                  storeRegController.storeStatusChange(0.6);
-                  firstTime = true;
+        bool isPrivacyPolicy = authController.isPrivacyPolicy;
+        bool isStoreAgreement = authController.isStoreAgreement;
+
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: ResponsiveHelper.isDesktop(context) ? 0 : Dimensions.paddingSizeDefault),
+          decoration: ResponsiveHelper.isDesktop(context) ? null : BoxDecoration(
+            color: Theme.of(context).cardColor,
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1)],
+          ),
+          child: CustomButton(
+            fontSize: ResponsiveHelper.isDesktop(context) ? Dimensions.fontSizeSmall : Dimensions.fontSizeDefault,
+            isBold: ResponsiveHelper.isDesktop(context) ? false : true,
+            radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
+            isLoading: storeRegController.isLoading,
+            margin: EdgeInsets.all(ResponsiveHelper.isDesktop(context) ? 0 : Dimensions.paddingSizeSmall),
+            buttonText: storeRegController.storeStatus == 0.1 && !ResponsiveHelper.isDesktop(context) ? 'next'.tr : 'submit'.tr,
+            color: /*ResponsiveHelper.isDesktop(context) ? Theme.of(context).disabledColor.withOpacity(0.9) :*/ Theme.of(context).primaryColor,
+            onPressed: ((storeRegController.storeStatus == 0.1 && !ResponsiveHelper.isDesktop(context) && !storeRegController.inZone)
+                || (ResponsiveHelper.isDesktop(context) && !storeRegController.inZone)) || (!storeRegController.acceptTerms || !isPrivacyPolicy || !isStoreAgreement) ? null :() {
+              bool defaultDataNull = false;
+              for(int index=0; index<_languageList!.length; index++) {
+                if(_languageList[index].key == 'en') {
+                  if (_nameController[index].text.trim().isEmpty || _addressController[index].text.trim().isEmpty) {
+                    defaultDataNull = true;
+                  }
+                  break;
                 }
               }
-            }else{
-              if(ResponsiveHelper.isDesktop(context)){
-                if(defaultDataNull) {
-                  showCustomSnackBar('enter_store_name'.tr);
-                }else if(storeRegController.restaurantLocation == null) {
-                  showCustomSnackBar('set_store_location'.tr);
-                }else if(storeRegController.selectedZoneIndex == -1) {
-                  showCustomSnackBar('please_select_zone'.tr);
-                }else if(storeRegController.selectedModuleIndex == -1) {
-                  showCustomSnackBar('please_select_module_first'.tr);
-                }else if(vat.isEmpty) {
-                  showCustomSnackBar('enter_vat_amount'.tr);
-                }else if(minTime.isEmpty) {
-                  showCustomSnackBar('enter_minimum_delivery_time'.tr);
-                }else if(maxTime.isEmpty) {
-                  showCustomSnackBar('enter_maximum_delivery_time'.tr);
-                }else if(!valid) {
-                  showCustomSnackBar('please_enter_the_max_min_delivery_time'.tr);
-                }else if(valid && double.parse(minTime) > double.parse(maxTime)) {
-                  showCustomSnackBar('maximum_delivery_time_can_not_be_smaller_then_minimum_delivery_time'.tr);
-                }else if(storeRegController.pickedLogo == null) {
-                  showCustomSnackBar('select_store_logo'.tr);
-                }else if(storeRegController.pickedCover == null) {
-                  showCustomSnackBar('select_store_cover_photo'.tr);
-                }
+              String taxId = _taxIdController.text.trim();
+              String regiNo = _registrationNoController.text.trim();
+              String vat = _vatController.text.trim();
+              String minTime = storeRegController.storeMinTime;
+              String maxTime = storeRegController.storeMaxTime;
+              String fName = _fNameController.text.trim();
+              String lName = _lNameController.text.trim();
+              String phone = _phoneController.text.trim();
+              String email = _emailController.text.trim();
+              String password = _passwordController.text.trim();
+              String confirmPassword = _confirmPasswordController.text.trim();
+              bool valid = false;
+              try {
+                double.parse(maxTime);
+                double.parse(minTime);
+                valid = true;
+              } on FormatException {
+                valid = false;
               }
-              if(_formKeySecond!.currentState!.validate() || ResponsiveHelper.isDesktop(context)){
-                if(fName.isEmpty) {
-                  showCustomSnackBar('enter_your_first_name'.tr);
-                }else if(lName.isEmpty) {
-                  showCustomSnackBar('enter_your_last_name'.tr);
-                }else if(phone.isEmpty) {
-                  showCustomSnackBar('enter_phone_number'.tr);
-                }else if(email.isEmpty) {
-                  showCustomSnackBar('enter_email_address'.tr);
-                }else if(!GetUtils.isEmail(email)) {
-                  showCustomSnackBar('enter_a_valid_email_address'.tr);
-                }else if(password.isEmpty) {
-                  showCustomSnackBar('enter_password'.tr);
-                }else if(password.length < 8) {
-                  showCustomSnackBar('password_should_be'.tr);
-                }else if(password != confirmPassword) {
-                  showCustomSnackBar('confirm_password_does_not_matched'.tr);
-                }else if(!storeRegController.spatialCheck || !storeRegController.lowercaseCheck || !storeRegController.uppercaseCheck || !storeRegController.numberCheck || !storeRegController.lengthCheck) {
-                  showCustomSnackBar('provide_valid_password'.tr);
-                }else {
-                  List<Translation> translation = [];
-                  for(int index=0; index<_languageList.length; index++) {
-                    translation.add(Translation(
-                      locale: _languageList[index].key, key: 'name',
-                      value: _nameController[index].text.trim().isNotEmpty ? _nameController[index].text.trim()
-                          : _nameController[0].text.trim(),
-                    ));
-                    translation.add(Translation(
-                      locale: _languageList[index].key, key: 'address',
-                      value: _addressController[index].text.trim().isNotEmpty ? _addressController[index].text.trim()
-                          : _addressController[0].text.trim(),
+
+              if(storeRegController.storeStatus == 0.1 && !ResponsiveHelper.isDesktop(context)){
+                if(_formKeyFirst!.currentState!.validate()){
+                  if(defaultDataNull) {
+                    showCustomSnackBar('enter_store_name'.tr);
+                  }else if(storeRegController.pickedLogo == null) {
+                    showCustomSnackBar('select_store_logo'.tr);
+                  }else if(storeRegController.pickedCover == null) {
+                    showCustomSnackBar('select_store_cover_photo'.tr);
+                  }else if(storeRegController.selectedZoneIndex == -1) {
+                    showCustomSnackBar('please_select_zone'.tr);
+                  }else if(storeRegController.selectedModuleIndex == -1) {
+                    showCustomSnackBar('please_select_module_first'.tr);
+                  }else if(storeRegController.restaurantLocation == null) {
+                    showCustomSnackBar('set_store_location'.tr);
+                  }else if(taxId.isEmpty){
+                    showCustomSnackBar('enter_tax_id_info'.tr);
+                  }else if(regiNo.isEmpty){
+                    showCustomSnackBar('enter_regi_no_info'.tr);
+                  }else if(storeRegController.pickedTax == null){
+                    showCustomSnackBar('upload_tax_document'.tr);
+                  }else if(storeRegController.pickedRegistration == null){
+                    showCustomSnackBar('upload_registration_document'.tr);
+                  }/*else if(storeRegController.pickedAgreement == null){
+                    showCustomSnackBar('upload_agreement_document'.tr);
+                  }*/else if(vat.isEmpty) {
+                    showCustomSnackBar('enter_vat_amount'.tr);
+                  }else if(minTime.isEmpty) {
+                    showCustomSnackBar('enter_minimum_delivery_time'.tr);
+                  }else if(maxTime.isEmpty) {
+                    showCustomSnackBar('enter_maximum_delivery_time'.tr);
+                  }else if(!valid) {
+                    showCustomSnackBar('please_enter_the_max_min_delivery_time'.tr);
+                  }else if(valid && double.parse(minTime) > double.parse(maxTime)) {
+                    showCustomSnackBar('maximum_delivery_time_can_not_be_smaller_then_minimum_delivery_time'.tr);
+                  }else{
+                    _scrollController.jumpTo(_scrollController.position.minScrollExtent);
+                    storeRegController.storeStatusChange(0.6);
+                    firstTime = true;
+                  }
+                }
+              }else{
+                if(ResponsiveHelper.isDesktop(context)){
+                  if(defaultDataNull) {
+                    showCustomSnackBar('enter_store_name'.tr);
+                  }else if(storeRegController.restaurantLocation == null) {
+                    showCustomSnackBar('set_store_location'.tr);
+                  }else if(storeRegController.selectedZoneIndex == -1) {
+                    showCustomSnackBar('please_select_zone'.tr);
+                  }else if(storeRegController.selectedModuleIndex == -1) {
+                    showCustomSnackBar('please_select_module_first'.tr);
+                  }else if(vat.isEmpty) {
+                    showCustomSnackBar('enter_vat_amount'.tr);
+                  }else if(minTime.isEmpty) {
+                    showCustomSnackBar('enter_minimum_delivery_time'.tr);
+                  }else if(maxTime.isEmpty) {
+                    showCustomSnackBar('enter_maximum_delivery_time'.tr);
+                  }else if(!valid) {
+                    showCustomSnackBar('please_enter_the_max_min_delivery_time'.tr);
+                  }else if(valid && double.parse(minTime) > double.parse(maxTime)) {
+                    showCustomSnackBar('maximum_delivery_time_can_not_be_smaller_then_minimum_delivery_time'.tr);
+                  }else if(storeRegController.pickedLogo == null) {
+                    showCustomSnackBar('select_store_logo'.tr);
+                  }else if(storeRegController.pickedCover == null) {
+                    showCustomSnackBar('select_store_cover_photo'.tr);
+                  }
+                }
+                if(_formKeySecond!.currentState!.validate() || ResponsiveHelper.isDesktop(context)){
+                  if(fName.isEmpty) {
+                    showCustomSnackBar('enter_your_first_name'.tr);
+                  }else if(lName.isEmpty) {
+                    showCustomSnackBar('enter_your_last_name'.tr);
+                  }else if(phone.isEmpty) {
+                    showCustomSnackBar('enter_phone_number'.tr);
+                  }else if(email.isEmpty) {
+                    showCustomSnackBar('enter_email_address'.tr);
+                  }else if(!GetUtils.isEmail(email)) {
+                    showCustomSnackBar('enter_a_valid_email_address'.tr);
+                  }else if(password.isEmpty) {
+                    showCustomSnackBar('enter_password'.tr);
+                  }else if(password.length < 8) {
+                    showCustomSnackBar('password_should_be'.tr);
+                  }else if(password != confirmPassword) {
+                    showCustomSnackBar('confirm_password_does_not_matched'.tr);
+                  }else if(!storeRegController.spatialCheck || !storeRegController.lowercaseCheck || !storeRegController.uppercaseCheck || !storeRegController.numberCheck || !storeRegController.lengthCheck) {
+                    showCustomSnackBar('provide_valid_password'.tr);
+                  }else {
+                    List<Translation> translation = [];
+                    for(int index=0; index<_languageList.length; index++) {
+                      translation.add(Translation(
+                        locale: _languageList[index].key, key: 'name',
+                        value: _nameController[index].text.trim().isNotEmpty ? _nameController[index].text.trim()
+                            : _nameController[0].text.trim(),
+                      ));
+                      translation.add(Translation(
+                        locale: _languageList[index].key, key: 'address',
+                        value: _addressController[index].text.trim().isNotEmpty ? _addressController[index].text.trim()
+                            : _addressController[0].text.trim(),
+                      ));
+                    }
+
+                    storeRegController.registerStore(StoreBodyModel(
+                      translation: jsonEncode(translation), tax: vat, minDeliveryTime: minTime,
+                      maxDeliveryTime: maxTime, lat: storeRegController.restaurantLocation!.latitude.toString(), email: email,
+                      lng: storeRegController.restaurantLocation!.longitude.toString(), fName: fName, lName: lName, phone: _countryDialCode! + phone,
+                      password: password, zoneId: storeRegController.zoneList![storeRegController.selectedZoneIndex!].id.toString(),
+                      moduleId: storeRegController.moduleList![storeRegController.selectedModuleIndex!].id.toString(),
+                      deliveryTimeType: storeRegController.storeTimeUnit, taxID: taxId, registerNo: regiNo,
                     ));
                   }
-
-                  storeRegController.registerStore(StoreBodyModel(
-                    translation: jsonEncode(translation), tax: vat, minDeliveryTime: minTime,
-                    maxDeliveryTime: maxTime, lat: storeRegController.restaurantLocation!.latitude.toString(), email: email,
-                    lng: storeRegController.restaurantLocation!.longitude.toString(), fName: fName, lName: lName, phone: _countryDialCode! + phone,
-                    password: password, zoneId: storeRegController.zoneList![storeRegController.selectedZoneIndex!].id.toString(),
-                    moduleId: storeRegController.moduleList![storeRegController.selectedModuleIndex!].id.toString(),
-                    deliveryTimeType: storeRegController.storeTimeUnit, taxID: taxId, registerNo: regiNo,
-                  ));
                 }
               }
-            }
-          },
-        ),
-      );
+            },
+          ),
+        );
+      });
     });
   }
 

@@ -90,6 +90,14 @@ class StoreRegistrationController extends GetxController implements GetxService 
   bool _inZone = false;
   bool get inZone => _inZone;
 
+  bool _acceptTerms = true;
+  bool get acceptTerms => _acceptTerms;
+
+  void toggleTerms() {
+    _acceptTerms = !_acceptTerms;
+    update();
+  }
+
   void showHidePass({bool isUpdate = true}){
     _showPassView = ! _showPassView;
     if(isUpdate) {
@@ -253,7 +261,7 @@ class StoreRegistrationController extends GetxController implements GetxService 
   Future<void> registerStore(StoreBodyModel storeBody) async {
     _isLoading = true;
     update();
-    Response? response = await storeRegistrationServiceInterface.registerStore(storeBody, _pickedLogo, _pickedCover, _pickedTax, _pickedRegistration, _pickedAgreement);
+    Response? response = await storeRegistrationServiceInterface.registerStore(storeBody, _pickedLogo, _pickedCover, _pickedTax, _pickedRegistration);
     if(response.statusCode == 200) {
       Get.find<HomeController>().saveRegistrationSuccessfulSharedPref(true);
       int? storeId = response.body['store_id'];

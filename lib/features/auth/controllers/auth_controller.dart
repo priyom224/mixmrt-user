@@ -30,6 +30,15 @@ class AuthController extends GetxController implements GetxService {
   bool _isActiveRememberMe = false;
   bool get isActiveRememberMe => _isActiveRememberMe;
 
+  bool _isDmAgreement = true;
+  bool get isDmAgreement => _isDmAgreement;
+
+  bool _isStoreAgreement = true;
+  bool get isStoreAgreement => _isStoreAgreement;
+
+  bool _isPrivacyPolicy = true;
+  bool get isPrivacyPolicy => _isPrivacyPolicy;
+
   void toggleRememberMe() {
     _isActiveRememberMe = !_isActiveRememberMe;
     update();
@@ -37,6 +46,21 @@ class AuthController extends GetxController implements GetxService {
 
   void toggleTerms() {
     _acceptTerms = !_acceptTerms;
+    update();
+  }
+
+  void toggleDmAgreement() {
+    _isDmAgreement = !_isDmAgreement;
+    update();
+  }
+
+  void toggleStoreAgreement() {
+    _isStoreAgreement = !_isStoreAgreement;
+    update();
+  }
+
+  void togglePrivacyPolicy() {
+    _isPrivacyPolicy = !_isPrivacyPolicy;
     update();
   }
 

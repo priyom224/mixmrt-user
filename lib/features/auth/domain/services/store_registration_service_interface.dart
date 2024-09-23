@@ -8,6 +8,6 @@ abstract class StoreRegistrationServiceInterface{
   Future<List<ZoneDataModel>?> getZoneList();
   int? prepareSelectedZoneIndex(List<int>? zoneIds, List<ZoneDataModel>? zoneList);
   Future<List<ModuleModel>?> getModules(int? zoneId);
-  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration, XFile? pickedAgreement);
+  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration);
   Future<bool> checkInZone(String? lat, String? lng, int zoneId);
 }

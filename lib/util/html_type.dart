@@ -4,5 +4,7 @@ enum HtmlType {
   privacyPolicy,
   shippingPolicy,
   cancellation,
-  refund
+  refund,
+  dmAgreement,
+  storeAgreement,
 }

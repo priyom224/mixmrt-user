@@ -4,6 +4,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
 import 'package:sixam_mart/features/language/controllers/language_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/auth/controllers/store_registration_controller.dart';
@@ -475,7 +476,7 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
                         ),
                         const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
-                        Row( children: [
+                        /*Row( children: [
                           Expanded(child: CustomTextField(
                             titleText: deliverymanRegistrationController.identityTypeIndex == 0 ? 'Ex: XXXXX-XXXXXXX-X' : deliverymanRegistrationController.identityTypeIndex == 1 ? 'L-XXX-XXX-XXX-XXX.' : 'XXX-XXXXX',
                             controller: _identityNumberController,
@@ -494,6 +495,14 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
                             ),
                           ) : const SizedBox(),
                         ],
+                        ),*/
+
+                        CustomTextField(
+                          titleText: deliverymanRegistrationController.identityTypeIndex == 0 ? 'Ex: XXXXX-XXXXXXX-X' : deliverymanRegistrationController.identityTypeIndex == 1 ? 'L-XXX-XXX-XXX-XXX.' : 'XXX-XXXXX',
+                          showLabelText: false,
+                          controller: _identityNumberController,
+                          focusNode: _identityNumberNode,
+                          inputAction: TextInputAction.done,
                         ),
                         const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
@@ -559,9 +568,9 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
                             );
                           },
                         ),
-                        const SizedBox(height: Dimensions.paddingSizeSmall),
+                        const SizedBox(height: Dimensions.paddingSizeDefault),
 
-                        Row(children: [
+                        /*Row(children: [
                           Expanded(flex: 10, child: Stack(children: [
                             Padding(
                               padding: const EdgeInsets.all(5.0),
@@ -599,9 +608,15 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
                               ),
                             ),
                           ]),),
-                        ],),  const SizedBox(height: Dimensions.paddingSizeSmall),
+                        ],),  const SizedBox(height: Dimensions.paddingSizeSmall),*/
+
+                        const ConditionCheck(isDmAgreement: true),
+                        const SizedBox(height: Dimensions.paddingSizeDefault),
 
                         const ConditionCheckBoxWidget(forDeliveryMan: true, forSignUp: false),
+                        const SizedBox(height: Dimensions.paddingSizeDefault),
+
+                        const ConditionCheck(),
 
                       ]),
                     ),
@@ -1108,6 +1123,11 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
 
   Widget buttonView(){
     return GetBuilder<DeliverymanRegistrationController>(builder: (deliverymanRegistrationController) {
+      return GetBuilder<AuthController>(builder: (authController) {
+
+        bool isPrivacyPolicy = authController.isPrivacyPolicy;
+        bool isDmAgreement = authController.isDmAgreement;
+
         return CustomButton(
           isBold: ResponsiveHelper.isDesktop(context) ? false : true,
           radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
@@ -1115,7 +1135,7 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
           buttonText: deliverymanRegistrationController.dmStatus == 0.4 ? 'next'.tr : 'submit'.tr,
           margin: EdgeInsets.all((ResponsiveHelper.isDesktop(context) || ResponsiveHelper.isWeb()) ? 0 : Dimensions.paddingSizeSmall),
           height: 50,
-          onPressed: !deliverymanRegistrationController.acceptTerms ? null : () async {
+          onPressed: !deliverymanRegistrationController.acceptTerms || !isPrivacyPolicy || !isDmAgreement ? null : () async {
             if(deliverymanRegistrationController.dmStatus == 0.4 && !ResponsiveHelper.isDesktop(context)){
               String fName = _fNameController.text.trim();
               String lName = _lNameController.text.trim();
@@ -1157,6 +1177,7 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
           },
         );
       });
+    });
   }
 
   void _addDeliveryMan(DeliverymanRegistrationController deliverymanRegiController) async {

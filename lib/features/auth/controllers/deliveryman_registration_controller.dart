@@ -47,7 +47,7 @@ class DeliverymanRegistrationController extends GetxController implements GetxSe
   bool _spatialCheck = false;
   bool get spatialCheck => _spatialCheck;
 
-  final List<String> _identityTypeList = ['passport', 'driving_license', 'nid'];
+  final List<String> _identityTypeList = ['nid'];
   List<String> get identityTypeList => _identityTypeList;
 
   int _identityTypeIndex = 0;
@@ -246,7 +246,7 @@ class DeliverymanRegistrationController extends GetxController implements GetxSe
   Future<void> registerDeliveryMan(DeliveryManBody deliveryManBody) async {
     _isLoading = true;
     update();
-    List<MultipartBody> multiParts = deliverymanRegistrationServiceInterface.prepareMultipart(_pickedImage, _pickedIdentities, _pickedAgreement);
+    List<MultipartBody> multiParts = deliverymanRegistrationServiceInterface.prepareMultipart(_pickedImage, _pickedIdentities);
     await deliverymanRegistrationServiceInterface.registerDeliveryMan(deliveryManBody, multiParts);
     _isLoading = false;
     update();

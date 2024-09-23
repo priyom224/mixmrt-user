@@ -36,8 +36,8 @@ class StoreRegistrationService implements StoreRegistrationServiceInterface {
   }
 
   @override
-  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration, XFile? pickedAgreement) async {
-    return await storeRegistrationRepoInterface.registerStore(store, logo, cover, pickedTax, pickedRegistration, pickedAgreement);
+  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration) async {
+    return await storeRegistrationRepoInterface.registerStore(store, logo, cover, pickedTax, pickedRegistration);
   }
 
   @override
