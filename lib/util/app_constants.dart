@@ -145,8 +145,8 @@ class AppConstants {
   static const String brandItemUri = '/api/v1/brand/items';
   static String storeDownloadFormUri = '$baseUrl/deliveryman/download-delivery-man-agreement';
   static String delDownloadFormUri = '$baseUrl/deliveryman/download-delivery-man-agreement';
-  static const String dmAgreement = '/show-agreement/dm';
-  static const String storeAgreement = '/show-agreement/store';
+  static const String dmAgreement = '/api/v1/show-agreement/dm';
+  static const String storeAgreement = '/api/v1/show-agreement/store';
 
   ///Subscription
   static const String businessPlanUri = '/api/v1/vendor/business_plan';
