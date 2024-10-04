@@ -290,13 +290,13 @@ class AppConstants {
     if (countryCode != null) {
       switch (countryCode) {
         case 'MW':
-          baseUrl = 'https://mixmrt.in/mw';
+          baseUrl = 'https://mixmrt.com/mw';
           break;
         case 'TZ':
-          baseUrl = 'https://mixmrt.us/tz';
+          baseUrl = 'https://mixmrt.com/tz';
           break;
         case 'ZM':
-          baseUrl = 'https://mixmrt.uk/zm';
+          baseUrl = 'https://mixmrt.com/zm';
           break;
         default:
           baseUrl = 'https://mixmrt.com/zm';

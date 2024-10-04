@@ -497,12 +497,15 @@ class _DeliveryManRegistrationScreenState extends State<DeliveryManRegistrationS
                         ],
                         ),*/
 
-                        CustomTextField(
-                          titleText: deliverymanRegistrationController.identityTypeIndex == 0 ? 'Ex: XXXXX-XXXXXXX-X' : deliverymanRegistrationController.identityTypeIndex == 1 ? 'L-XXX-XXX-XXX-XXX.' : 'XXX-XXXXX',
-                          showLabelText: false,
-                          controller: _identityNumberController,
-                          focusNode: _identityNumberNode,
-                          inputAction: TextInputAction.done,
+                        Form(
+                          key: _formKeyStep2,
+                          child: CustomTextField(
+                            titleText: deliverymanRegistrationController.identityTypeIndex == 0 ? 'Ex: XXXXX-XXXXXXX-X' : deliverymanRegistrationController.identityTypeIndex == 1 ? 'L-XXX-XXX-XXX-XXX.' : 'XXX-XXXXX',
+                            showLabelText: false,
+                            controller: _identityNumberController,
+                            focusNode: _identityNumberNode,
+                            inputAction: TextInputAction.done,
+                          ),
                         ),
                         const SizedBox(height: Dimensions.paddingSizeExtraLarge),
 
