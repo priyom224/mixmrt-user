@@ -2,9 +2,6 @@ import 'package:get/get.dart';
 import 'package:sixam_mart/common/models/choose_us_model.dart';
 import 'package:sixam_mart/features/language/domain/models/language_model.dart';
 import 'package:sixam_mart/util/images.dart';
-import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 class AppConstants {
   static const String appName = 'MIXMRT';
@@ -16,7 +13,6 @@ class AppConstants {
   static const String webHostedUrl = 'https://mixmrt.com/zm';
 
   static String baseUrl = 'https://mixmrt.com/zm';
-  // static const String baseUrl = 'http://192.168.68.166/6amtech/mart/Backend-6amMart';
 
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';
@@ -284,49 +280,4 @@ class AppConstants {
     },
   ];
 
-  static Future<void> setBaseUrlBasedOnCountry() async {
-    String? countryCode = await CountryDetector.getCountry();
-
-    if (countryCode != null) {
-      switch (countryCode) {
-        case 'MW':
-          baseUrl = 'https://mixmrt.com/mw';
-          break;
-        case 'TZ':
-          baseUrl = 'https://mixmrt.com/tz';
-          break;
-        case 'ZM':
-          baseUrl = 'https://mixmrt.com/zm';
-          break;
-        default:
-          baseUrl = 'https://mixmrt.com/zm';
-      }
-      if (kDebugMode) {
-        print('Base URL set to: $baseUrl');
-      }
-    }
-  }
-
-}
-
-class CountryDetector {
-  static Future<String?> getCountry() async {
-    try {
-      // Get IP address information
-      final response = await http.get(Uri.parse('http://ip-api.com/json'));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (kDebugMode) {
-          print('Country_code==>>: ${data['countryCode']}');
-        }
-        return data['countryCode'];
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error detecting country: $e');
-      }
-    }
-    return null;
-  }
 }

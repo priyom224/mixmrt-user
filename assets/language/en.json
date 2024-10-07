@@ -1271,5 +1271,6 @@
   "weight" : "Weight (kg)",
   "enter_parcel_weight" : "Enter parcel weight",
   "download_agreement" : "Download Agreement",
-  "wrong_input_type" : "Wrong input type"
+  "wrong_input_type" : "Wrong input type",
+  "select_your_country" : "Select your country"
 }

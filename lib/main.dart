@@ -37,9 +37,6 @@ Future<void> main() async {
   setPathUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Detect and set base URL based on the country
-  await AppConstants.setBaseUrlBasedOnCountry();
-
   if(GetPlatform.isWeb){
     await Firebase.initializeApp(options: const FirebaseOptions(
       apiKey: "AIzaSyDwdLNqrd8Is1i_q8BQWxXVbJshwHzAdsg",
@@ -125,17 +122,18 @@ class _MyAppState extends State<MyApp> {
         Get.find<CartController>().getCartDataOnline();
       }
 
+       Get.find<SplashController>().getConfigData(loadLandingData: GetPlatform.isWeb).then((bool isSuccess) async {
+         if (isSuccess) {
+           if (Get.find<AuthController>().isLoggedIn()) {
+             Get.find<AuthController>().updateToken();
+             if(Get.find<SplashController>().module != null) {
+               await Get.find<FavouriteController>().getFavouriteList();
+             }
+           }
+         }
+       });
     }
-    Get.find<SplashController>().getConfigData(loadLandingData: GetPlatform.isWeb).then((bool isSuccess) async {
-      if (isSuccess) {
-        if (Get.find<AuthController>().isLoggedIn()) {
-          Get.find<AuthController>().updateToken();
-          if(Get.find<SplashController>().module != null) {
-            await Get.find<FavouriteController>().getFavouriteList();
-          }
-        }
-      }
-    });
+
   }
 
   @override
