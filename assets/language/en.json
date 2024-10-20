@@ -1272,5 +1272,18 @@
   "enter_parcel_weight" : "Enter parcel weight",
   "download_agreement" : "Download Agreement",
   "wrong_input_type" : "Wrong input type",
-  "select_your_country" : "Select your country"
+  "select_your_country" : "Select your country",
+  "withdraw_request" : "Withdraw Request",
+  "request_balance" : "Request Balance",
+  "bank_name" : "Bank Name",
+  "bank_account_number" : "Bank Account Number",
+  "bank_routing_number" : "Bank Routing Number",
+  "notes" : "Notes",
+  "withdraw_request_sent_successfully" : "Withdraw request sent successfully",
+  "failed_to_send_withdraw_request" : "Failed to send withdraw request",
+  "enter_balance" : "Enter balance",
+  "enter_bank_name" : "Enter bank name",
+  "enter_account_number" : "Enter account number",
+  "enter_routing_number" : "Enter routing number",
+  "enter_notes" : "Enter notes"
 }

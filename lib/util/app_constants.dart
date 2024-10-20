@@ -143,6 +143,7 @@ class AppConstants {
   static String delDownloadFormUri = '$baseUrl/deliveryman/download-delivery-man-agreement';
   static const String dmAgreement = '/api/v1/show-agreement/dm';
   static const String storeAgreement = '/api/v1/show-agreement/store';
+  static const String sendWithdrawRequestUri = 'api/v1/customer/req-to-transfer';
 
   ///Subscription
   static const String businessPlanUri = '/api/v1/vendor/business_plan';

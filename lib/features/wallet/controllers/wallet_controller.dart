@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:sixam_mart/common/models/transaction_model.dart';
+import 'package:sixam_mart/common/widgets/custom_snackbar.dart';
+import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 import 'package:sixam_mart/features/wallet/domain/models/wallet_filter_body_model.dart';
 import 'package:sixam_mart/features/wallet/domain/models/fund_bonus_model.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
@@ -159,6 +161,21 @@ class WalletController extends GetxController implements GetxService {
 
   String getWalletAccessToken (){
     return walletServiceInterface.getWalletAccessToken();
+  }
+
+  Future<void> sendWithdrawRequest({int? requestBalance, String? bankName, String? bankAccountNumber, String? bankRoutingNumber, String? notes}) async {
+    _isLoading = true;
+    update();
+    Response response = await walletServiceInterface.sendWithdrawRequest(requestBalance: requestBalance, bankName: bankName, bankAccountNumber: bankAccountNumber, bankRoutingNumber: bankRoutingNumber, notes: notes);
+    if(response.statusCode == 200) {
+      await Get.find<ProfileController>().getUserInfo();
+      Get.back();
+      showCustomSnackBar('withdraw_request_sent_successfully'.tr, isError: false);
+    }else {
+      showCustomSnackBar('failed_to_send_withdraw_request'.tr, isError: true);
+    }
+    _isLoading = false;
+    update();
   }
 
 }

@@ -156,7 +156,12 @@ class _MenuScreenState extends State<MenuScreen> {
                       ) : const SizedBox(),
 
                       (Get.find<SplashController>().configModel!.customerWalletStatus == 1) ? PortionWidget(
-                          icon: Images.walletIcon, title: 'my_wallet'.tr, hideDivider: true, route: RouteHelper.getWalletRoute(),
+                          icon: Images.walletIcon, title: 'my_wallet'.tr, hideDivider: false, route: RouteHelper.getWalletRoute(),
+                        suffix: !isLoggedIn ? null : PriceConverter.convertPrice(profileController.userInfoModel != null ? profileController.userInfoModel!.walletBalance : 0),
+                      ) : const SizedBox(),
+
+                      (Get.find<SplashController>().configModel!.customerWalletStatus == 1) ? PortionWidget(
+                        icon: Images.walletIcon, title: 'withdraw_request'.tr, hideDivider: true, route: RouteHelper.getWithdrawScreen(),
                         suffix: !isLoggedIn ? null : PriceConverter.convertPrice(profileController.userInfoModel != null ? profileController.userInfoModel!.walletBalance : 0),
                       ) : const SizedBox(),
                     ]),

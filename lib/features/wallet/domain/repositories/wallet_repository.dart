@@ -88,5 +88,19 @@ class WalletRepository implements WalletRepositoryInterface{
     throw UnimplementedError();
   }
 
+  @override
+  Future<Response> sendWithdrawRequest({int? requestBalance, String? bankName, String? bankAccountNumber, String? bankRoutingNumber, String? notes}) async {
+
+    Map<String, dynamic> body = {
+      "request_balance": requestBalance,
+      "bank_name": bankName,
+      "bank_account_number": bankAccountNumber,
+      "bank_routing_number": bankRoutingNumber,
+      "notes": notes,
+    };
+
+    return await apiClient.postData(AppConstants.sendWithdrawRequestUri, body, handleError: false);
+  }
+
   
 }

@@ -31,6 +31,7 @@ import 'package:sixam_mart/features/auth/screens/store_registration_screen.dart'
 import 'package:sixam_mart/features/category/screens/category_screen.dart';
 import 'package:sixam_mart/features/location/screens/map_screen.dart';
 import 'package:sixam_mart/features/store/screens/campaign_screen.dart';
+import 'package:sixam_mart/features/wallet/screens/withdraw_screen.dart';
 import 'package:sixam_mart/helper/address_helper.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/util/app_constants.dart';
@@ -164,6 +165,7 @@ class RouteHelper {
   static const String favourite = '/favourite';
   static const String brands = '/brands';
   static const String brandsItemScreen = '/brands-item-screen';
+  static const String withdrawScreen = '/withdraw-screen';
 
   static const String subscriptionSuccess = '/subscription-success';
   static const String businessPlan = '/business-plan';
@@ -341,6 +343,7 @@ class RouteHelper {
   static String getFavouriteScreen() => favourite;
   static String getBrandsScreen() => brands;
   static String getBrandsItemScreen(int brandId, String brandName) => '$brandsItemScreen?brandId=$brandId&brandName=$brandName';
+  static String getWithdrawScreen() => withdrawScreen;
 
   static String getSubscriptionSuccessRoute({String? status, required bool fromSubscription, int? storeId}) => '$subscriptionSuccess?flag=$status&from_subscription=$fromSubscription&store_id=$storeId';
   //static String getBusinessPlanRoute(int? storeId) => '$businessPlan?id=$storeId';
@@ -601,6 +604,7 @@ class RouteHelper {
     GetPage(name: brandsItemScreen, page: () => BrandsItemScreen(
       brandId: int.parse(Get.parameters['brandId']!), brandName: Get.parameters['brandName']!,
     )),
+    GetPage(name: withdrawScreen, page: () => const WithdrawScreen()),
 
     GetPage(name: subscriptionSuccess, page: () => getRoute(SubscriptionSuccessOrFailedScreen(success: Get.parameters['flag'] == 'success', fromSubscription: Get.parameters['from_subscription'] == 'true', storeId: (Get.parameters['store_id'] != null && Get.parameters['store_id'] != 'null') ? int.parse(Get.parameters['store_id']!) : null))),
     //GetPage(name: businessPlan, page: () => BusinessPlanScreen(storeId: int.parse(Get.parameters['id']!))),

@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:sixam_mart/common/models/transaction_model.dart';
 import 'package:sixam_mart/features/wallet/domain/models/fund_bonus_model.dart';
 
@@ -7,4 +8,5 @@ abstract class WalletServiceInterface{
   Future<List<FundBonusModel>?> getWalletBonusList();
   Future<void> setWalletAccessToken(String token);
   String getWalletAccessToken();
+  Future<Response> sendWithdrawRequest({int? requestBalance, String? bankName, String? bankAccountNumber, String? bankRoutingNumber, String? notes});
 }
