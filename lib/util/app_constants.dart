@@ -14,6 +14,10 @@ class AppConstants {
 
   static String baseUrl = 'https://mixmrt.com/zm';
 
+  static void setBaseUrl(String url) {
+    baseUrl = url;
+  }
+
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';
   static const String storeItemUri = '/api/v1/items/latest';

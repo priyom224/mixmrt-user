@@ -13,7 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class ApiClient extends GetxService {
-  final String appBaseUrl;
+  String appBaseUrl;
   final SharedPreferences sharedPreferences;
   static final String noInternetMessage = 'connection_to_api_server_failed'.tr;
   final int timeoutInSeconds = 40;
@@ -41,6 +41,10 @@ class ApiClient extends GetxService {
       sharedPreferences.getString(AppConstants.languageCode), moduleID, addressModel?.latitude,
         addressModel?.longitude
     );
+  }
+
+  void updateBaseUrl(String url) {
+    appBaseUrl = url;
   }
 
   Map<String, String> updateHeader(String? token, List<int>? zoneIDs, List<int>? operationIds, String? languageCode, int? moduleID, String? latitude, String? longitude, {bool setHeader = true}) {
