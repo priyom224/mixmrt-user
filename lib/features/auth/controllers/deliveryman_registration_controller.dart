@@ -11,6 +11,7 @@ import 'package:sixam_mart/features/location/domain/models/zone_response_model.d
 import 'package:sixam_mart/features/auth/domain/models/delivery_man_body.dart';
 import 'package:sixam_mart/features/auth/domain/models/delivery_man_vehicles_model.dart';
 import 'package:sixam_mart/features/auth/domain/services/deliveryman_registration_service_interface.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 
 class DeliverymanRegistrationController extends GetxController implements GetxService {
   final DeliverymanRegistrationServiceInterface deliverymanRegistrationServiceInterface;
@@ -47,7 +48,7 @@ class DeliverymanRegistrationController extends GetxController implements GetxSe
   bool _spatialCheck = false;
   bool get spatialCheck => _spatialCheck;
 
-  final List<String> _identityTypeList = ['nrc', 'driving_license', 'passport'];
+  final List<String> _identityTypeList = AppConstants.baseUrl.contains('zm') ? ['nrc', 'driving_license', 'passport'] : ['nid', 'driving_license', 'passport'];
   List<String> get identityTypeList => _identityTypeList;
 
   int _identityTypeIndex = 0;

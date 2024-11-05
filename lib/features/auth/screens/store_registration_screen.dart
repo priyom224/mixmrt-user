@@ -447,7 +447,7 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                                 ],
                               ),*/
                               CustomTextField(
-                                titleText: 'tax_id'.tr,
+                                titleText: AppConstants.baseUrl.contains('zm') ? 'tpin'.tr : 'tax_id'.tr,
                                 showLabelText: false,
                                 controller: _taxIdController,
                                 focusNode: _taxIdFocus,
@@ -483,7 +483,7 @@ class _StoreRegistrationScreenState extends State<StoreRegistrationScreen> with 
                                           const SizedBox(height: Dimensions.paddingSizeSmall),
 
                                           Text(
-                                            'upload_tax_document'.tr,
+                                            AppConstants.baseUrl.contains('zm') ? 'upload_tpin_document'.tr : 'upload_tax_document'.tr,
                                             style: robotoMedium.copyWith(color: Theme.of(context).disabledColor), textAlign: TextAlign.center,
                                           ),
                                         ]),
