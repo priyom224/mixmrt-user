@@ -1254,9 +1254,9 @@
   "max_product" : "Max Product",
   "your_registration_not_setup_yet" : "Your registration not setup yet",
   "whats_new_on" : "What's New on",
-  "tax_id" : "Tax ID",
+  "tax_id" : "TPIN ID",
   "registration_no" : "Registration No",
-  "upload_tax_document" : "Upload Tax Document",
+  "upload_tax_document" : "Upload TPIN Document",
   "upload_registration_document" : "Upload Registration Document",
   "upload_agreement_document" : "Upload Agreement/Contact Document",
   "enter_tax_id_info" : "Enter Tax ID information",
@@ -1285,5 +1285,7 @@
   "enter_bank_name" : "Enter bank name",
   "enter_account_number" : "Enter account number",
   "enter_routing_number" : "Enter routing number",
-  "enter_notes" : "Enter notes"
+  "enter_notes" : "Enter notes",
+  "nrc" : "NRC",
+  "agreement_contract" : "Agreement/Contract"
 }

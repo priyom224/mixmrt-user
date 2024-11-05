@@ -83,7 +83,7 @@ class ConditionCheck extends StatelessWidget {
                 recognizer: TapGestureRecognizer()..onTap = () => isDmAgreement ? Get.toNamed(RouteHelper.getHtmlRoute('show-agreement-dm'))
                     : isStoreAgreement ? Get.toNamed(RouteHelper.getHtmlRoute('show-agreement-store'))
                     : Get.toNamed(RouteHelper.getHtmlRoute('privacy-policy')),
-                text: isDmAgreement || isStoreAgreement ? 'contact'.tr : 'privacy_policy'.tr,
+                text: isDmAgreement || isStoreAgreement ? 'agreement_contract'.tr : 'privacy_policy'.tr,
                 style: robotoMedium.copyWith(color: Theme.of(context).primaryColor),
               ),
             ]),
