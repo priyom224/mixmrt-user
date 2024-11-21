@@ -57,6 +57,9 @@ class OrderController extends GetxController implements GetxService {
   bool _isExpanded = false;
   bool get isExpanded => _isExpanded;
 
+  List<String?>? _supportReasons;
+  List<String?>? get supportReasons => _supportReasons;
+
   void expandedUpdate(bool status){
     _isExpanded = status;
     update();
@@ -156,6 +159,11 @@ class OrderController extends GetxController implements GetxService {
     }
   }
 
+  Future<void> getSupportReasons() async {
+    _supportReasons = await orderServiceInterface.getSupportReasonsList();
+    update();
+  }
+
   Future<List<OrderDetailsModel>?> getOrderDetails(String orderID) async {
     _orderDetails = null;
     _isLoading = true;
@@ -223,10 +231,10 @@ class OrderController extends GetxController implements GetxService {
     return _responseModel;
   }
 
-  Future<bool> cancelOrder(int? orderID, String? cancelReason) async {
+  Future<bool> cancelOrder(int? orderID, String? cancelReason, {String? guestId}) async {
     _isLoading = true;
     update();
-    bool success = await orderServiceInterface.cancelOrder(orderID.toString(), cancelReason);
+    bool success = await orderServiceInterface.cancelOrder(orderID.toString(), cancelReason, guestId: guestId);
     _isLoading = false;
     Get.back();
     if (success) {
@@ -240,18 +248,23 @@ class OrderController extends GetxController implements GetxService {
     return success;
   }
 
-  Future<bool> switchToCOD(String? orderID) async {
+  Future<bool> switchToCOD(String? orderID, {String? guestId}) async {
     _isLoading = true;
     update();
-    bool isSuccess = await orderServiceInterface.switchToCOD(orderID);
+    bool isSuccess = await orderServiceInterface.switchToCOD(orderID, guestId: guestId);
     _isLoading = false;
     update();
     return isSuccess;
   }
 
   void paymentRedirect({required String url, required bool canRedirect, required String? contactNumber,
-    required Function onClose, required final String? addFundUrl, required final String? subscriptionUrl, required final String orderID, int? storeId}) {
+    required Function onClose, required final String? addFundUrl, required final String? subscriptionUrl,
+    required final String orderID, int? storeId, required bool createAccount, required String guestId}) {
 
-    orderServiceInterface.paymentRedirect(url: url, canRedirect: canRedirect, contactNumber: contactNumber, onClose: onClose, addFundUrl: addFundUrl, subscriptionUrl: subscriptionUrl, orderID: orderID, storeId: storeId);
+    orderServiceInterface.paymentRedirect(
+      url: url, canRedirect: canRedirect, contactNumber: contactNumber, onClose: onClose,
+      addFundUrl: addFundUrl, subscriptionUrl: subscriptionUrl, orderID: orderID, storeId: storeId,
+      createAccount: createAccount, guestId: guestId,
+    );
   }
 }

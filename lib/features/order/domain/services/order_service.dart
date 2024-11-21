@@ -27,6 +27,11 @@ class OrderService implements OrderServiceInterface {
   }
 
   @override
+  Future<List<String?>?> getSupportReasonsList() async {
+    return await orderRepositoryInterface.getList(isSupportReasons: true);
+  }
+
+  @override
   Future<List<OrderDetailsModel>?> getOrderDetails(String orderID, String? guestId) async {
     return await orderRepositoryInterface.get(orderID, guestId: guestId);
   }
@@ -66,8 +71,8 @@ class OrderService implements OrderServiceInterface {
   }
 
   @override
-  Future<bool> cancelOrder(String orderID, String? reason) async {
-    return await orderRepositoryInterface.cancelOrder(orderID, reason);
+  Future<bool> cancelOrder(String orderID, String? reason, {String? guestId}) async {
+    return await orderRepositoryInterface.cancelOrder(orderID, reason, guestId: guestId);
   }
 
   @override
@@ -85,9 +90,9 @@ class OrderService implements OrderServiceInterface {
   }
 
   @override
-  Future<bool> switchToCOD(String? orderID) async {
+  Future<bool> switchToCOD(String? orderID, {String? guestId}) async {
     bool isSuccess = false;
-    Response response = await orderRepositoryInterface.switchToCOD(orderID);
+    Response response = await orderRepositoryInterface.switchToCOD(orderID,guestId: guestId);
     if (response.statusCode == 200) {
       isSuccess = true;
       await Get.offAllNamed(RouteHelper.getInitialRoute());
@@ -99,7 +104,7 @@ class OrderService implements OrderServiceInterface {
   @override
   void paymentRedirect({required String url, required bool canRedirect, required String? contactNumber,
     required Function onClose, required final String? addFundUrl, required final String? subscriptionUrl,
-    required final String orderID, int? storeId}) {
+    required final String orderID, int? storeId, required bool createAccount, required String guestId}) {
 
     bool forOrder = (addFundUrl == '' && addFundUrl!.isEmpty && subscriptionUrl == '' && subscriptionUrl!.isEmpty);
     bool forSubscription = (subscriptionUrl != null && subscriptionUrl.isNotEmpty && addFundUrl == '' && addFundUrl!.isEmpty);
@@ -118,9 +123,9 @@ class OrderService implements OrderServiceInterface {
 
       if(forOrder){
         if (isSuccess) {
-          Get.offNamed(RouteHelper.getOrderSuccessRoute(orderID, contactNumber));
+          Get.offNamed(RouteHelper.getOrderSuccessRoute(orderID, contactNumber, createAccount: createAccount, guestId: guestId));
         } else if (isFailed || isCancel) {
-          Get.offNamed(RouteHelper.getOrderSuccessRoute(orderID, contactNumber));
+          Get.offNamed(RouteHelper.getOrderSuccessRoute(orderID, contactNumber, createAccount: createAccount, guestId: guestId));
         }
       } else{
         if(isSuccess || isFailed || isCancel) {

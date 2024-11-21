@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_the_tooltip/just_the_tooltip.dart';
+import 'package:sixam_mart/features/checkout/widgets/guest_create_account.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
@@ -49,9 +50,14 @@ class ParcelRequestScreen extends StatefulWidget {
 
 class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
   final TextEditingController _tipController = TextEditingController();
+  final TextEditingController _guestPasswordController = TextEditingController();
+  final TextEditingController _guestConfirmPasswordController = TextEditingController();
+  final FocusNode _guestPasswordNode = FocusNode();
+  final FocusNode _guestConfirmPasswordNode = FocusNode();
   bool _isLoggedIn = AuthHelper.isLoggedIn();
   bool? _isCashOnDeliveryActive = false;
   bool? _isDigitalPaymentActive = false;
+  bool _isOfflinePaymentActive = false;
   bool canCheckSmall = false;
   final JustTheController tooltipController = JustTheController();
 
@@ -70,11 +76,12 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
     Get.find<ParcelController>().getDistance(widget.pickedUpAddress, widget.destinationAddress);
     Get.find<ParcelController>().setPayerIndex(0, false);
     Get.find<ParcelController>().startLoader(false, canUpdate: false);
-      for(ZoneData zData in AddressHelper.getUserAddressFromSharedPref()!.zoneData!){
+      for(ZoneData zData in widget.pickedUpAddress.zoneData!){
         if(zData.id == AddressHelper.getUserAddressFromSharedPref()!.zoneId){
           _isCashOnDeliveryActive = zData.cashOnDelivery! && Get.find<SplashController>().configModel!.cashOnDelivery!;
           _isDigitalPaymentActive = zData.digitalPayment! && Get.find<SplashController>().configModel!.digitalPayment!;
-
+          _isOfflinePaymentActive = zData.offlinePayment! && Get.find<SplashController>().configModel!.offlinePaymentStatus!;
+          break;
         }
       }
       if (Get.find<ProfileController>().userInfoModel == null && _isLoggedIn) {
@@ -84,11 +91,14 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
         Get.find<AuthController>().getDmTipIndex().isNotEmpty ? int.parse(Get.find<AuthController>().getDmTipIndex()) : 0, notify: false,
       );
 
+    if(Get.find<CheckoutController>().isCreateAccount) {
+      Get.find<CheckoutController>().toggleCreateAccount(willUpdate: false);
+    }
+
     Get.find<ParcelController>().setInstructionselectedIndex(-1, notify: false);
     Get.find<ParcelController>().setCustomNoteController('', notify: false);
     Get.find<ParcelController>().setSelectedIndex(-1);
     Get.find<ParcelController>().setCustomNote('');
-    Get.find<CheckoutController>().getExtraCharge(Get.find<CheckoutController>().weight);
   }
 
   @override
@@ -105,10 +115,10 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
           double total = 0;
           double dmTips = 0;
           double additionalCharge =  Get.find<SplashController>().configModel!.additionalChargeStatus! ? Get.find<SplashController>().configModel!.additionCharge! : 0;
-          bool isOfflinePaymentActive = Get.find<SplashController>().configModel!.offlinePaymentStatus!/* && CheckoutHelper.checkZoneOfflinePaymentOnOff(addressModel: AddressHelper.getUserAddressFromSharedPref())*/;
+          // bool isOfflinePaymentActive = Get.find<SplashController>().configModel!.offlinePaymentStatus!/* && CheckoutHelper.checkZoneOfflinePaymentOnOff(addressModel: AddressHelper.getUserAddressFromSharedPref())*/;
 
           if(parcelController.distance != -1 && parcelController.extraCharge != null) {
-            charge = _calculateParcelDeliveryCharge(parcelController: parcelController, parcelCategory: widget.parcelCategory, zoneId: widget.pickedUpAddress.zoneId!, weight: Get.find<CheckoutController>().weight);
+            charge = _calculateParcelDeliveryCharge(parcelController: parcelController, parcelCategory: widget.parcelCategory, zoneId: widget.pickedUpAddress.zoneId!);
             dmTips = parcelController.tips;
             total = charge + dmTips + additionalCharge;
           }
@@ -264,6 +274,14 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
                   ),
                 ),
                 const SizedBox(height: Dimensions.paddingSizeDefault),
+
+                isGuestLoggedIn ? GuestCreateAccount(
+                  guestPasswordController: _guestPasswordController, guestConfirmPasswordController: _guestConfirmPasswordController,
+                  guestPasswordNode: _guestPasswordNode, guestConfirmPasswordNode: _guestConfirmPasswordNode,
+                  fromParcel: true,
+                ): const SizedBox(),
+
+                const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
                 (Get.find<SplashController>().configModel!.dmTipsStatus == 1) ? Container(
                   color: Theme.of(context).cardColor,
@@ -485,7 +503,7 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
                 parcelController.offlineMethodList != null && parcelController.payerIndex == 0 ? OfflinePaymentButton(
                   isSelected: parcelController.paymentIndex == 3,
                   offlineMethodList: parcelController.offlineMethodList!,
-                  isOfflinePaymentActive: isOfflinePaymentActive,
+                  isOfflinePaymentActive: _isOfflinePaymentActive,
                   onTap: () {
                     parcelController.setPaymentIndex(3, true);
                   },
@@ -539,12 +557,12 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
                 const CheckoutCondition(isParcel: true),
 
                 SizedBox(height: ResponsiveHelper.isDesktop(context) ? Dimensions.paddingSizeLarge : 0),
-                ResponsiveHelper.isDesktop(context) ? _bottomButton(parcelController, total) : const SizedBox(),
+                ResponsiveHelper.isDesktop(context) ? _bottomButton(parcelController, total, isGuestLoggedIn: isGuestLoggedIn) : const SizedBox(),
 
               ]))),
             )),
 
-            ResponsiveHelper.isDesktop(context) ? const SizedBox() : _bottomButton(parcelController, total),
+            ResponsiveHelper.isDesktop(context) ? const SizedBox() : _bottomButton(parcelController, total, isGuestLoggedIn: isGuestLoggedIn),
 
           ]);
         }) : NotLoggedInScreen(callBack: (value){
@@ -555,7 +573,7 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
     );
   }
 
-  Widget _bottomButton(ParcelController parcelController, double charge) {
+  Widget _bottomButton(ParcelController parcelController, double charge, {bool isGuestLoggedIn = false}) {
 
     bool isInstructionSelected = parcelController.selectedIndexNote != -1;
     bool isCustomNote = parcelController.customNote!.isNotEmpty;
@@ -571,6 +589,12 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
           showCustomSnackBar('tips_can_not_be_negative'.tr);
         }else if(parcelController.paymentIndex == -1) {
           showCustomSnackBar('please_select_payment_method_first'.tr);
+        }else if(isGuestLoggedIn && Get.find<CheckoutController>().isCreateAccount && _guestPasswordController.text.isEmpty) {
+          showCustomSnackBar('enter_password'.tr);
+        }else if(isGuestLoggedIn && Get.find<CheckoutController>().isCreateAccount && _guestConfirmPasswordController.text.isEmpty) {
+          showCustomSnackBar('enter_confirm_password'.tr);
+        }else if(isGuestLoggedIn && Get.find<CheckoutController>().isCreateAccount && (_guestPasswordController.text != _guestConfirmPasswordController.text)) {
+          showCustomSnackBar('confirm_password_does_not_matched'.tr);
         }else {
 
           PlaceOrderBodyModel placeOrderBody = PlaceOrderBodyModel(
@@ -590,7 +614,9 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
             chargePayer: parcelController.payerTypes[parcelController.payerIndex], dmTips: parcelController.tips.toString(),
             cutlery: 0, unavailableItemNote: '',
             deliveryInstruction: (isInstructionSelected ? '${parcelController.parcelInstructionList![parcelController.selectedIndexNote!].instruction}' : '') + (isInstructionSelected ? (isCustomNote ? " (${parcelController.customNote})" : '') : (isCustomNote ? parcelController.customNote ?? '' : '')),
-            partialPayment: 0, guestId: AuthHelper.isGuestLoggedIn() ? int.parse(AuthHelper.getGuestId()) : 0, isBuyNow: 0, guestEmail: null, extraPackagingAmount: null, weight: widget.pickedUpAddress.weight,
+            partialPayment: 0, guestId: AuthHelper.isGuestLoggedIn() ? int.parse(AuthHelper.getGuestId()) : 0, isBuyNow: 0,
+            guestEmail: widget.pickedUpAddress.email ?? '', extraPackagingAmount: null,
+            createNewUser: Get.find<CheckoutController>().isCreateAccount ? 1 : 0, password: _guestPasswordController.text,
           );
 
           if(parcelController.paymentIndex == 3) {
@@ -604,25 +630,14 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
     );
   }
 
-  double _calculateParcelDeliveryCharge({required ParcelController parcelController, required ParcelCategoryModel parcelCategory, required int zoneId, required double? weight}) {
+  double _calculateParcelDeliveryCharge({required ParcelController parcelController, required ParcelCategoryModel parcelCategory, required int zoneId}) {
     double charge = 0;
-    double weightCharge = 0;
     ZoneData? zoneData;
     for(ZoneData zData in AddressHelper.getUserAddressFromSharedPref()!.zoneData!) {
       if(zData.id == zoneId) {
         zoneData = zData;
       }
     }
-    double? parcelPerKgCharge;
-    parcelPerKgCharge = parcelCategory.parcelPerKgCharge;
-
-    if(parcelPerKgCharge != null) {
-      weightCharge =  weight! * parcelPerKgCharge;
-    }
-
-    debugPrint('===========================>>>>$parcelPerKgCharge');
-    debugPrint('===========================>>>>$weight');
-    debugPrint('===========================>>>>$weightCharge');
 
     if(parcelController.distance != -1 && parcelController.extraCharge != null) {
       double parcelPerKmShippingCharge = parcelCategory.parcelPerKmShippingCharge! > 0
@@ -631,15 +646,12 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
       double parcelMinimumShippingCharge = parcelCategory.parcelMinimumShippingCharge! > 0
           ? parcelCategory.parcelMinimumShippingCharge!
           : Get.find<SplashController>().configModel!.parcelMinimumShippingCharge!;
-
-      charge = weightCharge + (parcelController.distance! * parcelPerKmShippingCharge);
-
+      charge = parcelController.distance! * parcelPerKmShippingCharge;
       if (charge < parcelMinimumShippingCharge) {
         charge = parcelMinimumShippingCharge;
       }
 
       if (parcelController.extraCharge != null) {
-        debugPrint('===========================>>>>${parcelController.extraCharge}');
         charge = charge + parcelController.extraCharge!;
       }
 
@@ -647,7 +659,7 @@ class _ParcelRequestScreenState extends State<ParcelRequestScreen> {
         charge = charge + (charge * (zoneData.increaseDeliveryFee! / 100));
       }
     }
-    debugPrint('===========================>>>>$charge');
+
     return PriceConverter.toFixed(charge);
   }
 

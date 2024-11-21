@@ -11,26 +11,27 @@ class FilterView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return storeController.storeModel != null ? PopupMenuButton(
+      padding: EdgeInsets.zero,
       itemBuilder: (context) {
         return [
           PopupMenuItem(
             value: 'all',
             child: Text('all'.tr, style: robotoMedium.copyWith(
-              color: storeController.storeType == 'all'
+              color: storeController.filterType == 'all'
               ? Theme.of(context).textTheme.bodyLarge!.color : Theme.of(context).disabledColor,
             )),
           ),
           PopupMenuItem(
             value: 'take_away',
             child: Text('take_away'.tr, style: robotoMedium.copyWith(
-              color: storeController.storeType == 'take_away'
+              color: storeController.filterType == 'take_away'
                 ? Theme.of(context).textTheme.bodyLarge!.color : Theme.of(context).disabledColor,
             )),
           ),
           PopupMenuItem(
             value: 'delivery',
             child: Text('delivery'.tr, style: robotoMedium.copyWith(
-              color: storeController.storeType == 'delivery'
+              color: storeController.filterType == 'delivery'
               ? Theme.of(context).textTheme.bodyLarge!.color : Theme.of(context).disabledColor,
             )),
           ),
@@ -38,18 +39,29 @@ class FilterView extends StatelessWidget {
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.radiusSmall)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall),
+        padding: const EdgeInsets.symmetric(horizontal: 0),
         child: Container(
           height: 40, width: 40,
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+            borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
             border: Border.all(color: Theme.of(context).primaryColor),
           ),
           child: Icon(Icons.filter_list, color: Theme.of(context).primaryColor),
         ),
       ),
-      onSelected: (dynamic value) => storeController.setStoreType(value),
-    ) : const SizedBox();
+      onSelected: (dynamic value) => storeController.setFilterType(value),
+    ) : Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 0),
+      child: Container(
+        height: 40, width: 40,
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+          border: Border.all(color: Theme.of(context).disabledColor),
+        ),
+        child: Icon(Icons.filter_list, color: Theme.of(context).disabledColor),
+      ),
+    );
   }
 }

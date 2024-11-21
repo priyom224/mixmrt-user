@@ -1,6 +1,7 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sixam_mart/features/category/controllers/category_controller.dart';
 import 'package:sixam_mart/features/coupon/controllers/coupon_controller.dart';
 import 'package:sixam_mart/features/language/controllers/language_controller.dart';
@@ -22,6 +23,8 @@ import 'package:sixam_mart/common/widgets/custom_snackbar.dart';
 import 'package:sixam_mart/features/home/screens/home_screen.dart';
 import 'package:sixam_mart/features/store/domain/services/store_service_interface.dart';
 import 'package:sixam_mart/helper/module_helper.dart';
+import 'package:sixam_mart/helper/responsive_helper.dart';
+import 'package:sixam_mart/util/app_constants.dart';
 
 class StoreController extends GetxController implements GetxService {
   final StoreServiceInterface storeServiceInterface;
@@ -35,6 +38,9 @@ class StoreController extends GetxController implements GetxService {
 
   List<Store>? _latestStoreList;
   List<Store>? get latestStoreList => _latestStoreList;
+
+  List<Store>? _topOfferStoreList;
+  List<Store>? get topOfferStoreList => _topOfferStoreList;
 
   List<Store>? _featuredStoreList;
   List<Store>? get featuredStoreList => _featuredStoreList;
@@ -59,6 +65,9 @@ class StoreController extends GetxController implements GetxService {
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  String _filterType = 'all';
+  String get filterType => _filterType;
 
   String _storeType = 'all';
   String get storeType => _storeType;
@@ -107,14 +116,7 @@ class StoreController extends GetxController implements GetxService {
   }
 
   String filteringUrl(String slug){
-    List<String> routes = Get.currentRoute.split('?');
-    String replace = '';
-    if(slug.isNotEmpty){
-      replace = '${routes[0]}?slug=$slug';
-    }else {
-      replace = '${routes[0]}?slug=${_store!.id}';
-    }
-    return replace;
+    return storeServiceInterface.filterRestaurantLinkUrl(slug, _store!);
   }
 
   void pickPrescriptionImage({required bool isRemove, required bool isCamera}) async {
@@ -185,7 +187,7 @@ class StoreController extends GetxController implements GetxService {
       _storeModel = null;
       update();
     }
-    StoreModel? storeModel = await storeServiceInterface.getStoreList(offset, _storeType);
+    StoreModel? storeModel = await storeServiceInterface.getStoreList(offset, _filterType, _storeType);
     if (storeModel != null) {
       if (offset == 1) {
         _storeModel = storeModel;
@@ -198,9 +200,19 @@ class StoreController extends GetxController implements GetxService {
     }
   }
 
+  void setFilterType(String type) {
+    _filterType = type;
+    getStoreList(1, true);
+  }
+
   void setStoreType(String type) {
     _storeType = type;
     getStoreList(1, true);
+  }
+
+  void resetStoreData() {
+    _filterType = 'all';
+    _storeType = 'all';
   }
 
   Future<void> getPopularStoreList(bool reload, String type, bool notify) async {
@@ -234,6 +246,23 @@ class StoreController extends GetxController implements GetxService {
       if (latestStoreList != null) {
         _latestStoreList = [];
         _latestStoreList!.addAll(latestStoreList);
+      }
+      update();
+    }
+  }
+
+  Future<void> getTopOfferStoreList(bool reload, bool notify) async {
+    if(reload){
+      _topOfferStoreList = null;
+    }
+    if(notify) {
+      update();
+    }
+    if(_topOfferStoreList == null || reload) {
+      List<Store>? latestStoreList = await storeServiceInterface.getTopOfferStoreList();
+      if (latestStoreList != null) {
+        _topOfferStoreList = [];
+        _topOfferStoreList!.addAll(latestStoreList);
       }
       update();
     }
@@ -465,5 +494,17 @@ class StoreController extends GetxController implements GetxService {
   double? getDiscount(Store store) => store.discount != null ? store.discount!.discount : 0;
 
   String? getDiscountType(Store store) => store.discount != null ? store.discount!.discountType : 'percent';
+
+  void shareStore() {
+    if(ResponsiveHelper.isDesktop(Get.context)){
+      String shareUrl = '${AppConstants.webHostedUrl}${filteringUrl(store!.slug ?? '')}';
+
+      Clipboard.setData(ClipboardData(text: shareUrl));
+      showCustomSnackBar('store_url_copied'.tr, isError: false);
+    } else {
+      String shareUrl = '${AppConstants.webHostedUrl}${filteringUrl(store!.slug ?? '')}';
+      Share.share(shareUrl);
+    }
+  }
 
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:photo_view/photo_view.dart';
+import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/order/controllers/order_controller.dart';
 import 'package:sixam_mart/features/order/domain/models/order_details_model.dart';
@@ -49,7 +50,7 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
   void _loadData(BuildContext context, bool reload) async {
     await Get.find<OrderController>().trackOrder(widget.orderId.toString(), reload ? null : widget.orderModel, false, contactNumber: widget.contactNumber).then((value) {
       if(widget.fromOfflinePayment) {
-        Future.delayed(const Duration(seconds: 2), () => showAnimatedDialog(context, OfflineSuccessDialog(orderId: widget.orderId)));
+        Future.delayed(const Duration(seconds: 2), () => showAnimatedDialog(Get.context!, OfflineSuccessDialog(orderId: widget.orderId)));
       }
     });
     Get.find<OrderController>().timerTrackOrder(widget.orderId.toString(), contactNumber: widget.contactNumber);
@@ -58,8 +59,8 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   void _startApiCall(){
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
-      Get.find<OrderController>().timerTrackOrder(widget.orderId.toString(), contactNumber: widget.contactNumber);
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+      await Get.find<OrderController>().timerTrackOrder(widget.orderId.toString(), contactNumber: widget.contactNumber);
     });
   }
 
@@ -74,16 +75,16 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   @override
   void dispose() {
-    super.dispose();
-
     _timer?.cancel();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: Navigator.canPop(context),
-      onPopInvoked: (value) async {
+      onPopInvokedWithResult: (didPop, result) async {
         if(widget.fromNotification || widget.fromOfflinePayment) {
           Get.offAllNamed(RouteHelper.getInitialRoute());
         } else {
@@ -164,6 +165,8 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
               } else {
                 showChatPermission = false;
               }
+            } else {
+              showChatPermission = AuthHelper.isLoggedIn();
             }
 
             ongoing = (order.orderStatus != 'delivered' && order.orderStatus != 'failed' && order.orderStatus != 'canceled' && order.orderStatus != 'refund_requested'
@@ -206,7 +209,7 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         discount: discount, couponDiscount: couponDiscount, tax: tax, addOns: addOns, dmTips: dmTips,
                         taxIncluded: taxIncluded, subTotal: subTotal, total: total,
                         bottomView: _bottomView(orderController, order, parcel, total), extraPackagingAmount: extraPackagingCharge,
-                        referrerBonusAmount: referrerBonusAmount,
+                        referrerBonusAmount: referrerBonusAmount, timerCancel : () => _timer?.cancel(), startApiCall : () =>  _startApiCall(),
                       ),
                     ),
                   ]) : const SizedBox(),
@@ -222,6 +225,7 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
                       prescriptionOrder: prescriptionOrder, deliveryCharge: deliveryCharge, itemsPrice: itemsPrice,
                       discount: discount, couponDiscount: couponDiscount, tax: tax, addOns: addOns, dmTips: dmTips, taxIncluded: taxIncluded, subTotal: subTotal, total: total,
                       bottomView: _bottomView(orderController, order, parcel, total), extraPackagingAmount: extraPackagingCharge, referrerBonusAmount: referrerBonusAmount,
+                    timerCancel : () => _timer?.cancel(), startApiCall : () =>  _startApiCall(),
                   ),
 
                 ],
@@ -276,8 +280,9 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 margin: ResponsiveHelper.isDesktop(context) ? null : const EdgeInsets.all(Dimensions.paddingSizeSmall),
                 onPressed: () async{
                   _timer?.cancel();
-                  await Get.toNamed(RouteHelper.getOrderTrackingRoute(order.id, widget.contactNumber));
-                  _startApiCall();
+                  await Get.toNamed(RouteHelper.getOrderTrackingRoute(order.id, widget.contactNumber))?.whenComplete(() {
+                    _startApiCall();
+                  });
                 },
               ),
             ) : const SizedBox(),
@@ -308,7 +313,7 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
             order.orderStatus == 'pending' ? const SizedBox(width: Dimensions.paddingSizeSmall) : const SizedBox(),
 
-            order.orderStatus == 'pending' ? Expanded(child: Padding(
+            (order.orderStatus == 'pending' && (Get.find<AuthController>().isLoggedIn() ? true : (orderController.orderDetails != null && orderController.orderDetails!.isNotEmpty  && orderController.orderDetails?[0].isGuest == 1 ? true : false))) ? Expanded(child: Padding(
               padding: ResponsiveHelper.isDesktop(context) ? EdgeInsets.zero : const EdgeInsets.all(Dimensions.paddingSizeSmall),
               child: TextButton(
                 style: TextButton.styleFrom(minimumSize: const Size(1, 50), shape: RoundedRectangleBorder(
@@ -316,7 +321,7 @@ class OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 )),
                 onPressed: () {
                   orderController.setOrderCancelReason('');
-                  Get.dialog(CancellationDialogueWidget(orderId: order.id));
+                  Get.dialog(CancellationDialogueWidget(orderId: order.id, contactNumber: widget.contactNumber));
                 },
                 child: Text(parcel ? 'cancel_delivery'.tr : 'cancel_order'.tr, style: robotoBold.copyWith(
                   color: Theme.of(context).disabledColor, fontSize: Dimensions.fontSizeLarge,

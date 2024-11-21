@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
+import 'package:sixam_mart/common/widgets/hover/text_hover.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/store/controllers/store_controller.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
@@ -54,19 +55,24 @@ class WebRecommendedStoreView extends StatelessWidget {
                       arguments: StoreScreen(store: storeController.recommendedStoreList![index], fromModule: false),
                     );
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-                      child: CustomImage(
-                        image: '${storeController.recommendedStoreList![index].logoFullUrl}',
-                        fit: BoxFit.cover, height: 60, width: double.infinity,
-                      ),
-                    ),
+                  child: TextHover(
+                    builder: (hovered) {
+                      return Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                          child: CustomImage(
+                            isHovered: hovered,
+                            image: '${storeController.recommendedStoreList![index].logoFullUrl}',
+                            fit: BoxFit.cover, height: 60, width: double.infinity,
+                          ),
+                        ),
+                      );
+                    }
                   ),
                 );
               },
@@ -76,14 +82,13 @@ class WebRecommendedStoreView extends StatelessWidget {
             )),
           ),
         ]),
-      ) : WebRecommendedStoreShimmerView(isFood: isFood);
+      ) : const WebRecommendedStoreShimmerView();
     });
   }
 }
 
 class WebRecommendedStoreShimmerView extends StatelessWidget {
-  final bool isFood;
-  const WebRecommendedStoreShimmerView({super.key, required this.isFood});
+  const WebRecommendedStoreShimmerView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,13 +97,20 @@ class WebRecommendedStoreShimmerView extends StatelessWidget {
       enabled: true,
       child: Container(
         margin: const EdgeInsets.only(top: Dimensions.paddingSizeDefault),
+        padding:  const EdgeInsets.all(Dimensions.paddingSizeSmall),
         width: Get.width, height: 302,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: Theme.of(context).shadowColor,
           borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
         ),
-        /*child: Column(children: [
-          Text(isFood ? 'recommended_restaurants'.tr : 'recommended_stores'.tr, style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeLarge)),
+        child: Column(children: [
+          Container(
+            height: 20, width: double.infinity,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+            ),
+          ),
           const SizedBox(height: Dimensions.paddingSizeLarge),
 
           Container(
@@ -123,7 +135,7 @@ class WebRecommendedStoreShimmerView extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Theme.of(context).shadowColor,
                       borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
                     ),
                   ),
@@ -131,7 +143,7 @@ class WebRecommendedStoreShimmerView extends StatelessWidget {
               },
             ),
           ),
-        ]),*/
+        ]),
       ),
     );
   }

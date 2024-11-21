@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sixam_mart/features/flash_sale/widgets/flash_sale_view_widget.dart';
 import 'package:sixam_mart/features/home/widgets/bad_weather_widget.dart';
+import 'package:sixam_mart/features/home/widgets/highlight_widget.dart';
 import 'package:sixam_mart/features/home/widgets/views/banner_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/best_reviewed_item_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/best_store_nearby_view.dart';
@@ -13,6 +14,7 @@ import 'package:sixam_mart/features/home/widgets/views/new_on_mart_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/middle_section_banner_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/special_offer_view.dart';
 import 'package:sixam_mart/features/home/widgets/views/promotional_banner_view.dart';
+import 'package:sixam_mart/features/home/widgets/views/top_offers_near_me.dart';
 import 'package:sixam_mart/features/home/widgets/views/visit_again_view.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 
@@ -41,12 +43,14 @@ class GroceryHomeScreen extends StatelessWidget {
       const CategoryView(),
       isLoggedIn ? const VisitAgainView() : const SizedBox(),
       const SpecialOfferView(isFood: false, isShop: false),
+      const HighlightWidget(),
       const FlashSaleViewWidget(),
       const BestStoreNearbyView(),
       const MostPopularItemView(isFood: false, isShop: false),
       const MiddleSectionBannerView(),
       const BestReviewItemView(),
       const JustForYouView(),
+      const TopOffersNearMe(),
       const ItemThatYouLoveView(forShop: false),
       isLoggedIn ? const PromoCodeBannerView() : const SizedBox(),
       const NewOnMartView(isPharmacy: false, isShop: false),

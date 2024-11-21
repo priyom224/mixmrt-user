@@ -102,55 +102,6 @@ class OrderInfoWidget extends StatelessWidget {
                 ),
               ]),
 
-
-
-              order.thirdParty == true ?  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Divider(height: Dimensions.paddingSizeLarge),
-
-                Text('third_party_company_info'.tr, style: robotoRegular),
-                const SizedBox(height: Dimensions.paddingSizeDefault),
-
-                Row(children: [
-                  Text('${'company_name'.tr}:', style: robotoRegular),
-                  const Expanded(child: SizedBox()),
-
-                  Text('${order.deliveryCompany?.companyName}', style: robotoRegular),
-                ],), const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                Row(children: [
-                  Text('${'tracking_url'.tr}:', style: robotoRegular),
-                  const Expanded(child: SizedBox()),
-
-
-                  SizedBox( height: 28, child:
-                  TextButton(
-                    style: TextButton.styleFrom(backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1)),
-                    child: Text('click'.tr, style: robotoMedium.copyWith(color: Theme.of(context).primaryColor, fontSize: Dimensions.fontSizeSmall),),
-                    onPressed: () async{
-                      String? trackUrl = order.deliveryCompany?.trackingUrl.toString();
-
-                      if(await canLaunchUrlString(trackUrl!)) {
-                        launchUrlString(trackUrl, mode: LaunchMode.externalApplication);
-                      }else {
-                        showCustomSnackBar('${'can_not_launch'.tr} $trackUrl');
-                      }
-                    },
-                  ),
-                  ),
-
-                ],), const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                Row(children: [
-                  Text('${'serial_number'.tr}:', style: robotoRegular),
-                  const Expanded(child: SizedBox()),
-
-                  Text('${order.deliveryCompany?.serialNumber}', style: robotoRegular),
-                ],),  const SizedBox(height: Dimensions.paddingSizeSmall),
-
-              ],) : const SizedBox(),
-
-
-
               order.scheduled == 1 ? Divider(height: Dimensions.paddingSizeLarge, color: Theme.of(context).disabledColor.withOpacity(0.30)) : const SizedBox(),
               order.scheduled == 1 ? Row(children: [
                 Text('${'scheduled_at'.tr}:', style: robotoRegular),
@@ -211,17 +162,6 @@ class OrderInfoWidget extends StatelessWidget {
                 ]),
               ),
 
-              Row(children: [
-                Text('weight'.tr, style: robotoRegular),
-                const Expanded(child: SizedBox()),
-
-                Text(
-                  '${order.weight}',
-                  style: robotoRegular,
-                ),
-              ]),
-
-
               Get.find<SplashController>().getModuleConfig(order.moduleType).newVariation! ? Column(children: [
                 Divider(height: Dimensions.paddingSizeLarge, color: Theme.of(context).disabledColor.withOpacity(0.30)),
 
@@ -259,8 +199,7 @@ class OrderInfoWidget extends StatelessWidget {
                       text: '${'delivery_instruction'.tr}: ',
                       style: robotoMedium.copyWith(color: Theme.of(context).textTheme.bodyMedium!.color),
                       children: <TextSpan>[
-                        TextSpan(text: order.deliveryInstruction!,
-                            style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall)
+                        TextSpan(text: order.deliveryInstruction!, style: robotoRegular
                         )
                       ]
                   ),
@@ -570,7 +509,7 @@ class OrderInfoWidget extends StatelessWidget {
               DeliveryDetailsWidget(from: true, address: order.store!.address),
 
               const SizedBox(height: Dimensions.paddingSizeSmall),
-              DeliveryDetailsWidget(from: false, address: order.deliveryAddress!.address),
+              DeliveryDetailsWidget(from: false, address: order.deliveryAddress?.address),
             ]),
           ) : const SizedBox(),
           SizedBox(height: !parcel ? Dimensions.paddingSizeSmall : 0),

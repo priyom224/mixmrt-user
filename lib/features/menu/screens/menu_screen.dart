@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
+import 'package:sixam_mart/features/auth/widgets/auth_dialog_widget.dart';
+import 'package:sixam_mart/features/cart/controllers/cart_controller.dart';
 import 'package:sixam_mart/features/home/controllers/home_controller.dart';
+import 'package:sixam_mart/features/language/controllers/language_controller.dart';
+import 'package:sixam_mart/features/language/widgets/language_bottom_sheet_widget.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 import 'package:sixam_mart/features/favourite/controllers/favourite_controller.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
-import 'package:sixam_mart/features/auth/screens/sign_in_screen.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/date_converter.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
@@ -61,13 +65,29 @@ class _MenuScreenState extends State<MenuScreen> {
 
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(
-                      isLoggedIn ? '${profileController.userInfoModel?.fName} ${profileController.userInfoModel?.lName}' : 'guest_user'.tr,
+                    isLoggedIn && profileController.userInfoModel == null ? Shimmer(
+                      child: Container(
+                        height: 15, width: 150,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ) : Text(
+                      isLoggedIn ? '${profileController.userInfoModel?.fName ?? ''} ${profileController.userInfoModel?.lName ?? ''}' : 'guest_user'.tr,
                       style: robotoBold.copyWith(fontSize: Dimensions.fontSizeExtraLarge, color: Theme.of(context).cardColor),
                     ),
-                    const SizedBox(height: Dimensions.paddingSizeExtraSmall),
+                    SizedBox(height: isLoggedIn && profileController.userInfoModel == null ? Dimensions.paddingSizeSmall : Dimensions.paddingSizeExtraSmall),
 
-                    isLoggedIn ? Text(
+                    isLoggedIn && profileController.userInfoModel == null ? Shimmer(
+                      child: Container(
+                        height: 15, width: 100,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                      ),
+                    ) : isLoggedIn ? Text(
                       profileController.userInfoModel != null ? DateConverter.containTAndZToUTCFormat(profileController.userInfoModel!.createdAt!) : '',
                       style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).cardColor),
                     ) : InkWell(
@@ -78,7 +98,7 @@ class _MenuScreenState extends State<MenuScreen> {
                             profileController.getUserInfo();
                           }
                         }else{
-                          Get.dialog(const SignInScreen(exitFromApp: true, backFromThis: true));
+                          Get.dialog(const Center(child: AuthDialogWidget(exitFromApp: true, backFromThis: true)));
                         }
                       },
                       child: Text(
@@ -120,7 +140,7 @@ class _MenuScreenState extends State<MenuScreen> {
                     child: Column(children: [
                       PortionWidget(icon: Images.profileIcon, title: 'profile'.tr, route: RouteHelper.getProfileRoute()),
                       PortionWidget(icon: Images.addressIcon, title: 'my_address'.tr, route: RouteHelper.getAddressRoute()),
-                      PortionWidget(icon: Images.languageIcon, title: 'language'.tr, hideDivider: true, route: RouteHelper.getLanguageRoute('menu')),
+                      PortionWidget(icon: Images.languageIcon, title: 'language'.tr, hideDivider: true, onTap: ()=> _manageLanguageFunctionality(), route: ''),
                     ]),
                   )
 
@@ -156,12 +176,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       ) : const SizedBox(),
 
                       (Get.find<SplashController>().configModel!.customerWalletStatus == 1) ? PortionWidget(
-                          icon: Images.walletIcon, title: 'my_wallet'.tr, hideDivider: false, route: RouteHelper.getWalletRoute(),
-                        suffix: !isLoggedIn ? null : PriceConverter.convertPrice(profileController.userInfoModel != null ? profileController.userInfoModel!.walletBalance : 0),
-                      ) : const SizedBox(),
-
-                      (Get.find<SplashController>().configModel!.customerWalletStatus == 1) ? PortionWidget(
-                        icon: Images.walletIcon, title: 'withdraw_request'.tr, hideDivider: true, route: RouteHelper.getWithdrawScreen(),
+                          icon: Images.walletIcon, title: 'my_wallet'.tr, hideDivider: true, route: RouteHelper.getWalletRoute(),
                         suffix: !isLoggedIn ? null : PriceConverter.convertPrice(profileController.userInfoModel != null ? profileController.userInfoModel!.walletBalance : 0),
                       ) : const SizedBox(),
                     ]),
@@ -252,22 +267,20 @@ class _MenuScreenState extends State<MenuScreen> {
                 InkWell(
                   onTap: () async {
                     if(AuthHelper.isLoggedIn()) {
-                      Get.dialog(ConfirmationDialog(icon: Images.support, description: 'are_you_sure_to_logout'.tr, isLogOut: true, onYesPressed: () {
+                      Get.dialog(ConfirmationDialog(icon: Images.support, description: 'are_you_sure_to_logout'.tr, isLogOut: true, onYesPressed: () async {
                         Get.find<ProfileController>().clearUserInfo();
-                        Get.find<AuthController>().clearSharedData();
                         Get.find<AuthController>().socialLogout();
+                        Get.find<CartController>().clearCartList(canRemoveOnline: false);
                         Get.find<FavouriteController>().removeFavourite();
+                        await Get.find<AuthController>().clearSharedData();
                         Get.find<HomeController>().forcefullyNullCashBackOffers();
-                        if(ResponsiveHelper.isDesktop(context)){
-                          Get.offAllNamed(RouteHelper.getInitialRoute());
-                        }else{
-                          Get.offAllNamed(RouteHelper.getSignInRoute(RouteHelper.splash));
-                        }
+                        Get.offAllNamed(RouteHelper.getInitialRoute());
                       }), useSafeArea: false);
                     }else {
                       Get.find<FavouriteController>().removeFavourite();
                       await Get.toNamed(RouteHelper.getSignInRoute(Get.currentRoute));
                       if(AuthHelper.isLoggedIn()) {
+                        await Get.find<FavouriteController>().getFavouriteList();
                         profileController.getUserInfo();
                       }
                     }
@@ -296,4 +309,24 @@ class _MenuScreenState extends State<MenuScreen> {
       }),
     );
   }
+
+  _manageLanguageFunctionality() {
+    Get.find<LocalizationController>().saveCacheLanguage(null);
+    Get.find<LocalizationController>().searchSelectedLanguage();
+
+    showModalBottomSheet(
+      isScrollControlled: true, useRootNavigator: true, context: Get.context!,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(Dimensions.radiusExtraLarge), topRight: Radius.circular(Dimensions.radiusExtraLarge)),
+      ),
+      builder: (context) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.8),
+          child: const LanguageBottomSheetWidget(),
+        );
+      },
+    ).then((value) => Get.find<LocalizationController>().setLanguage(Get.find<LocalizationController>().getCacheLocaleFromSharedPref()));
+  }
+
 }

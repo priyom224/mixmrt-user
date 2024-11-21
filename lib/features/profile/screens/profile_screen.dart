@@ -1,8 +1,9 @@
+import 'package:sixam_mart/features/auth/widgets/auth_dialog_widget.dart';
+import 'package:sixam_mart/features/profile/widgets/notification_status_change_bottom_sheet.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/common/controllers/theme_controller.dart';
 import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
-import 'package:sixam_mart/features/auth/screens/sign_in_screen.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/date_converter.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
@@ -91,7 +92,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Expanded(
                             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                               Text(
-                                isLoggedIn ? '${profileController.userInfoModel!.fName} ${profileController.userInfoModel!.lName}' : 'guest_user'.tr,
+                                isLoggedIn ? '${profileController.userInfoModel?.fName ?? ''} ${profileController.userInfoModel?.lName ?? ''}' : 'guest_user'.tr,
                                 style: robotoBold.copyWith(fontSize: Dimensions.fontSizeExtraLarge),
                               ),
                               const SizedBox(height: Dimensions.paddingSizeExtraSmall),
@@ -107,7 +108,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       profileController.getUserInfo();
                                     }
                                   }else{
-                                    await Get.dialog(const SignInScreen(exitFromApp: true, backFromThis: true));
+                                    Get.dialog(const Center(child: AuthDialogWidget(exitFromApp: false, backFromThis: false)));
                                   }
 
                                 },
@@ -138,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   profileController.getUserInfo();
                                 }
                               }else{
-                                Get.dialog(const SignInScreen(exitFromApp: true, backFromThis: true));
+                                Get.dialog(const Center(child: AuthDialogWidget(exitFromApp: false, backFromThis: false)));
                               }
                             },
                             child: Container(
@@ -203,16 +204,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               return ProfileButtonWidget(
                                 icon: Icons.notifications, title: 'notification'.tr,
                                 isButtonActive: authController.notification, onTap: () {
-                                authController.setNotificationActive(!authController.notification);
+                                Get.bottomSheet(const NotificationStatusChangeBottomSheet());
+                                // authController.setNotificationActive(!authController.notification);
                               },
                               );
                             }) : const SizedBox(),
                             SizedBox(height: isLoggedIn ? Dimensions.paddingSizeSmall : 0),
 
-                            isLoggedIn ? profileController.userInfoModel!.socialId == null ? ProfileButtonWidget(icon: Icons.lock, title: 'change_password'.tr, onTap: () {
+                            isLoggedIn && Get.find<SplashController>().configModel!.centralizeLoginSetup!.manualLoginStatus! ? ProfileButtonWidget(icon: Icons.lock, title: 'change_password'.tr, onTap: () {
                               Get.toNamed(RouteHelper.getResetPasswordRoute('', '', 'password-change'));
-                            }) : const SizedBox() : const SizedBox(),
-                            SizedBox(height: isLoggedIn ? profileController.userInfoModel!.socialId == null ? Dimensions.paddingSizeSmall : 0 : 0),
+                            }) : const SizedBox(),
+                            SizedBox(height: isLoggedIn && Get.find<SplashController>().configModel!.centralizeLoginSetup!.manualLoginStatus! ? Dimensions.paddingSizeSmall : 0),
 
                             isLoggedIn ? ProfileButtonWidget(
                               icon: Icons.delete, title: 'delete_account'.tr,
@@ -231,7 +233,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                               Text('${'version'.tr}:', style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall)),
                               const SizedBox(width: Dimensions.paddingSizeExtraSmall),
-                              Text(AppConstants.appVersion.toString(), style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall)),
+                              Text(AppConstants.appVersion.toStringAsFixed(2), style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeExtraSmall)),
                             ]),
                           ]),
                         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
+import 'package:sixam_mart/common/widgets/hover/text_hover.dart';
 import 'package:sixam_mart/features/item/controllers/campaign_controller.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
 import 'package:sixam_mart/util/dimensions.dart';
@@ -23,27 +24,32 @@ class MiddleSectionMultipleBannerViewWidget extends StatelessWidget {
             crossAxisCount: 3,
             crossAxisSpacing: Dimensions.paddingSizeExtremeLarge,
             mainAxisSpacing: Dimensions.paddingSizeExtremeLarge,
-            mainAxisExtent: 230,
+            mainAxisExtent: 130,
           ),
           itemBuilder: (context, index) {
-            return InkWell(
-              hoverColor: Colors.transparent,
-              onTap: () => Get.toNamed(RouteHelper.getBasicCampaignRoute(
-                campaignController.basicCampaignList![index],
-              )),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.all(Radius.circular(Dimensions.radiusDefault)),
-                  color: Theme.of(context).cardColor,
-                ),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(Dimensions.radiusDefault)),
-                  child: CustomImage(
-                    image: '${campaignController.basicCampaignList![index].imageFullUrl}',
-                    fit: BoxFit.cover, height: 230, width: double.infinity,
+            return TextHover(
+              builder: (hovered) {
+                return InkWell(
+                  hoverColor: Colors.transparent,
+                  onTap: () => Get.toNamed(RouteHelper.getBasicCampaignRoute(
+                    campaignController.basicCampaignList![index],
+                  )),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(Dimensions.radiusDefault)),
+                      color: Theme.of(context).cardColor,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(Dimensions.radiusDefault)),
+                      child: CustomImage(
+                        isHovered: hovered,
+                        image: '${campaignController.basicCampaignList![index].imageFullUrl}',
+                        fit: BoxFit.cover, height: 230, width: double.infinity,
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                );
+              }
             );
           },
         ),

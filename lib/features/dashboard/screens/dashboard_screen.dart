@@ -13,6 +13,7 @@ import 'package:sixam_mart/features/address/screens/address_screen.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
 import 'package:sixam_mart/features/dashboard/widgets/bottom_nav_item_widget.dart';
 import 'package:sixam_mart/features/parcel/controllers/parcel_controller.dart';
+import 'package:sixam_mart/features/store/controllers/store_controller.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
@@ -65,7 +66,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     if(_isLogin){
       if(Get.find<SplashController>().configModel!.loyaltyPointStatus == 1 && Get.find<AuthController>().getEarningPint().isNotEmpty
           && !ResponsiveHelper.isDesktop(Get.context)){
-        Future.delayed(const Duration(seconds: 1), () => showAnimatedDialog(context, const CongratulationDialogue()));
+        Future.delayed(const Duration(seconds: 1), () => showAnimatedDialog(Get.context!, const CongratulationDialogue()));
       }
       suggestAddressBottomSheet();
       Get.find<OrderController>().getRunningOrders(1, fromDashboard: true);
@@ -93,12 +94,12 @@ class DashboardScreenState extends State<DashboardScreen> {
     bool canShowBottomSheet = Get.find<HomeController>().getRegistrationSuccessfulSharedPref();
     if(canShowBottomSheet) {
       Future.delayed(const Duration(seconds: 1), () {
-        ResponsiveHelper.isDesktop(context) ? Get.dialog(const Dialog(child: StoreRegistrationSuccessBottomSheet())).then((value) {
+        ResponsiveHelper.isDesktop(Get.context) ? Get.dialog(const Dialog(child: StoreRegistrationSuccessBottomSheet())).then((value) {
           Get.find<HomeController>().saveRegistrationSuccessfulSharedPref(false);
           Get.find<HomeController>().saveIsStoreRegistrationSharedPref(false);
           setState(() {});
         }) : showModalBottomSheet(
-          context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+          context: Get.context!, isScrollControlled: true, backgroundColor: Colors.transparent,
           builder: (con) => const StoreRegistrationSuccessBottomSheet(),
         ).then((value) {
           Get.find<HomeController>().saveRegistrationSuccessfulSharedPref(false);
@@ -114,7 +115,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     if(widget.fromSplash && Get.find<LocationController>().showLocationSuggestion && active) {
       Future.delayed(const Duration(seconds: 1), () {
         showModalBottomSheet(
-          context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
+          context: Get.context!, isScrollControlled: true, backgroundColor: Colors.transparent,
           builder: (con) => const AddressBottomSheetWidget(),
         ).then((value) {
           Get.find<LocationController>().hideSuggestedLocation();
@@ -132,12 +133,13 @@ class DashboardScreenState extends State<DashboardScreen> {
       builder: (splashController) {
         return PopScope(
           canPop: false,
-          onPopInvoked: (value) async {
+          onPopInvokedWithResult: (didPop, result) async {
             if (_pageIndex != 0) {
               _setPage(0);
             } else {
               if(!ResponsiveHelper.isDesktop(context) && Get.find<SplashController>().module != null && Get.find<SplashController>().configModel!.module == null) {
                 Get.find<SplashController>().setModule(null);
+                Get.find<StoreController>().resetStoreData();
               }else {
                 if(_canExit) {
                   if (GetPlatform.isAndroid) {
@@ -266,7 +268,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ]),
 
-                  persistentContentHeight: (widget.fromSplash && Get.find<LocationController>().showLocationSuggestion && active) ? 0 : 100 ,
+                  persistentContentHeight: (widget.fromSplash && Get.find<LocationController>().showLocationSuggestion && active) ? 0 : GetPlatform.isIOS ? 110 : 100,
 
                   onIsContractedCallback: () {
                     if(!orderController.showOneOrder) {

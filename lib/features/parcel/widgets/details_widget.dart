@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/address/domain/models/address_model.dart';
+import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/styles.dart';
 
@@ -31,7 +32,7 @@ class DetailsWidget extends StatelessWidget {
           maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
         ) : const SizedBox(),
 
-        (address!.house != null && address!.house!.isNotEmpty) ? Text('${'house'.tr}: ${address!.house!}, ',
+        (address!.house != null && address?.house != 'null' && address!.house!.isNotEmpty) ? Text('${'house'.tr}: ${address!.house!}, ',
           maxLines: 1, overflow: TextOverflow.ellipsis, style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
         ) : const SizedBox(),
 
@@ -44,6 +45,11 @@ class DetailsWidget extends StatelessWidget {
         address!.contactPersonNumber ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
         style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall),
       ),
+
+      AuthHelper.isGuestLoggedIn() ? Text(
+        address?.email ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
+        style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall),
+      ) : const SizedBox(),
 
     ]);
   }

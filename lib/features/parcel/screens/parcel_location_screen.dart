@@ -1,10 +1,7 @@
-
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
-import 'package:sixam_mart/features/checkout/controllers/checkout_controller.dart';
-import 'package:sixam_mart/features/order/controllers/order_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
 import 'package:sixam_mart/features/address/controllers/address_controller.dart';
@@ -44,7 +41,8 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
    final TextEditingController _receiverStreetNumberController = TextEditingController();
    final TextEditingController _receiverHouseController = TextEditingController();
    final TextEditingController _receiverFloorController = TextEditingController();
-   final TextEditingController _weightController = TextEditingController();
+   final TextEditingController _guestSenderEmailController = TextEditingController();
+    final TextEditingController _guestReceiverEmailController = TextEditingController();
 
   TabController? _tabController;
   String? _countryDialCode;
@@ -126,8 +124,9 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
     _receiverStreetNumberController.dispose();
     _receiverHouseController.dispose();
     _receiverFloorController.dispose();
+    _guestSenderEmailController.dispose();
+    _guestReceiverEmailController.dispose();
     _tabController?.dispose();
-    _weightController.dispose();
   }
 
   @override
@@ -187,12 +186,12 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
                   ParcelViewWidget(
                     isSender: true, nameController: _senderNameController, phoneController: _senderPhoneController, bottomButton: _bottomButton(),
                     streetController: _senderStreetNumberController, floorController: _senderFloorController, houseController: _senderHouseController,
-                    countryCode: _countryDialCode, weight: true, weightController: _weightController,
+                    countryCode: parcelController.senderCountryCode, guestEmailController: _guestSenderEmailController,
                   ),
                   ParcelViewWidget(
                     isSender: false, nameController: _receiverNameController, phoneController: _receiverPhoneController, bottomButton: _bottomButton(),
                     streetController: _receiverStreetNumberController, floorController: _receiverFloorController, houseController: _receiverHouseController,
-                    countryCode: _countryDialCode, weight: false,
+                    countryCode: parcelController.receiverCountryCode, guestEmailController: _guestReceiverEmailController,
                   ),
                 ],
               )),
@@ -249,6 +248,8 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
                   streetNumber: _receiverStreetNumberController.text.trim(),
                   house: _receiverHouseController.text.trim(),
                   floor: _receiverFloorController.text.trim(),
+                  email: _guestReceiverEmailController.text.trim(),
+                  zoneData: parcelController.destinationAddress!.zoneData,
                 );
 
                 parcelController.setDestinationAddress(destination);
@@ -271,9 +272,7 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
     PhoneValid phoneValid = await CustomValidator.isPhoneValid(numberWithCountryCode);
     numberWithCountryCode = phoneValid.phone;
 
-    Get.find<CheckoutController>().setWeight(double.tryParse(_weightController.text));
-
-    if(Get.find<ParcelController>().pickupAddress == null) {
+    if(parcelController.pickupAddress == null) {
       showCustomSnackBar('select_pickup_address'.tr);
       _tabController!.animateTo(0);
     } else if(_senderNameController.text.isEmpty){
@@ -282,16 +281,16 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
     } else if(_senderPhoneController.text.isEmpty){
       showCustomSnackBar('enter_sender_phone_number'.tr);
       _tabController!.animateTo(0);
-    } else if(_weightController.text.isEmpty){
-      showCustomSnackBar('enter_parcel_weight'.tr);
-      _tabController!.animateTo(0);
-    }else if((_weightController.text.contains('-'))){
-      showCustomSnackBar('wrong_input_type'.tr);
     } else if (!phoneValid.isValid) {
       showCustomSnackBar('invalid_phone_number'.tr);
       _tabController!.animateTo(0);
+    }else if(AuthHelper.isGuestLoggedIn() && _guestSenderEmailController.text.isEmpty){
+      showCustomSnackBar('please_enter_sender_email'.tr);
+      _tabController!.animateTo(0);
+    }else if(AuthHelper.isGuestLoggedIn() && !CustomValidator.isEmailValid(_guestSenderEmailController.text.trim())){
+      showCustomSnackBar('enter_valid_email_address'.tr);
+      _tabController!.animateTo(0);
     } else{
-      debugPrint("===================>>>>${_weightController.text}");
       AddressModel pickup = AddressModel(
         address: parcelController.pickupAddress!.address,
         additionalAddress: parcelController.pickupAddress!.additionalAddress,
@@ -307,7 +306,8 @@ class _ParcelLocationScreenState extends State<ParcelLocationScreen> with Ticker
         streetNumber: _senderStreetNumberController.text.trim(),
         house: _senderHouseController.text.trim(),
         floor: _senderFloorController.text.trim(),
-        weight: _weightController.text.trim(),
+        email: _guestSenderEmailController.text.trim(),
+        zoneData: parcelController.pickupAddress!.zoneData,
       );
       parcelController.setPickupAddress(pickup, true);
       _tabController!.animateTo(1);

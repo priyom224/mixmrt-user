@@ -42,9 +42,9 @@ class CheckoutRepository implements CheckoutRepositoryInterface {
   }
 
   @override
-  Future<double> getExtraCharge(double? weight) async {
+  Future<double> getExtraCharge(double? distance) async {
     double extraCharge = 0;
-    Response response = await apiClient.getData('${AppConstants.vehicleChargeUri}?weight=$weight', handleError: false);
+    Response response = await apiClient.getData('${AppConstants.vehicleChargeUri}?distance=$distance', handleError: false);
     if (response.statusCode == 200) {
       extraCharge = double.parse(response.body.toString());
     }

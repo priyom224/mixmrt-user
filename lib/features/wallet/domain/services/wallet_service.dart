@@ -33,9 +33,4 @@ class WalletService implements WalletServiceInterface {
     return walletRepositoryInterface.getWalletAccessToken();
   }
 
-  @override
-  Future<Response> sendWithdrawRequest({int? requestBalance, String? bankName, String? bankAccountNumber, String? bankRoutingNumber, String? notes}) async {
-    return await walletRepositoryInterface.sendWithdrawRequest(requestBalance: requestBalance, bankName: bankName, bankAccountNumber: bankAccountNumber, bankRoutingNumber: bankRoutingNumber, notes: notes);
-  }
-
 }

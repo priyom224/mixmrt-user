@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:sixam_mart/features/flash_sale/controllers/flash_sale_controller.dart';
+import 'package:sixam_mart/features/home/widgets/web/web_recomanded_store_view_widget.dart';
 import 'package:sixam_mart/features/item/controllers/item_controller.dart';
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/features/home/widgets/components/flash_sale_card_widget.dart';
@@ -26,10 +26,12 @@ class _WebFlashSaleViewWidgetState extends State<WebFlashSaleViewWidget> {
       Item? item;
       int stock = 0;
       int remaining = 0;
+      int sold = 0;
       if(flashSaleController.flashSaleModel != null && flashSaleController.flashSaleModel!.activeProducts != null) {
-        item = flashSaleController.flashSaleModel!.activeProducts![flashSaleController.pageIndex].item;
-        stock = flashSaleController.flashSaleModel!.activeProducts![flashSaleController.pageIndex].stock!;
-        int sold = flashSaleController.flashSaleModel!.activeProducts![flashSaleController.pageIndex].sold!;
+        int index = flashSaleController.flashSaleModel!.activeProducts!.length > 1 ? flashSaleController.pageIndex : 0;
+        item = flashSaleController.flashSaleModel!.activeProducts![index].item;
+        stock = flashSaleController.flashSaleModel!.activeProducts![index].stock!;
+        sold = flashSaleController.flashSaleModel!.activeProducts![index].sold!;
         if(stock >= sold) {
           remaining = stock - sold;
         }
@@ -56,9 +58,9 @@ class _WebFlashSaleViewWidgetState extends State<WebFlashSaleViewWidget> {
 
                 ]),
               ),
-              const Spacer(),
+              const SizedBox(width: Dimensions.paddingSizeSmall),
 
-              FlashSaleTimerView(eventDuration: flashSaleController.duration),
+              Flexible(child: FlashSaleTimerWebHomeView(eventDuration: flashSaleController.duration)),
             ]),
           ),
 
@@ -66,7 +68,10 @@ class _WebFlashSaleViewWidgetState extends State<WebFlashSaleViewWidget> {
             activeProducts: flashSaleController.flashSaleModel!.activeProducts!, soldOut: remaining == 0,
           ) : const SizedBox(),
 
-          Text("${item!.name}", style: robotoRegular, maxLines: 1, overflow: TextOverflow.ellipsis,),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeDefault),
+            child: Text("${item!.name}", style: robotoRegular, maxLines: 1, overflow: TextOverflow.ellipsis,),
+          ),
           const SizedBox(height: Dimensions.paddingSizeExtraSmall),
 
           /*(Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item.unitType != null) ? Text(
@@ -113,12 +118,12 @@ class _WebFlashSaleViewWidgetState extends State<WebFlashSaleViewWidget> {
           ]),
           const SizedBox(height: Dimensions.paddingSizeDefault),
         ]),
-      ) : const SizedBox() : const WebFlashSaleShimmerView();
+      ) : const SizedBox() : const WebRecommendedStoreShimmerView();
     });
   }
 }
 
-class WebFlashSaleShimmerView extends StatelessWidget {
+/*class WebFlashSaleShimmerView extends StatelessWidget {
   const WebFlashSaleShimmerView({super.key});
 
   @override
@@ -136,4 +141,4 @@ class WebFlashSaleShimmerView extends StatelessWidget {
       ),
     );
   }
-}
+}*/

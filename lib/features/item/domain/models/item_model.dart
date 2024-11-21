@@ -100,7 +100,9 @@ class Item {
   bool? isStoreHalalActive;
   bool? isHalalItem;
   bool? isPrescriptionRequired;
-  double? weight;
+  List<String>? nutritionsName;
+  List<String>? allergiesName;
+  List<String>? genericName;
 
   Item({
     this.id,
@@ -138,7 +140,9 @@ class Item {
     this.isStoreHalalActive,
     this.isHalalItem,
     this.isPrescriptionRequired,
-    this.weight,
+    this.nutritionsName,
+    this.allergiesName,
+    this.genericName,
   });
 
   Item.fromJson(Map<String, dynamic> json) {
@@ -146,7 +150,14 @@ class Item {
     name = json['name'];
     description = json['description'];
     imageFullUrl = json['image_full_url'];
-    imagesFullUrl = json['images_full_url'] != null ? json['images_full_url'].cast<String>() : [];
+    if(json['images_full_url'] != null){
+      imagesFullUrl = [];
+      json['images_full_url'].forEach((v) {
+        if(v != null) {
+          imagesFullUrl!.add(v.toString());
+        }
+      });
+    }
     categoryId = json['category_id'];
     if (json['category_ids'] != null) {
       categoryIds = [];
@@ -209,10 +220,9 @@ class Item {
     isStoreHalalActive = json['halal_tag_status'] == 1;
     isHalalItem = json['is_halal'] == 1;
     isPrescriptionRequired = json['is_prescription_required'] == 1;
-    if(json['weight'] != null){
-      weight = json['weight'].toDouble();
-    }
-
+    nutritionsName = json['nutritions_name']?.cast<String>();
+    allergiesName = json['allergies_name']?.cast<String>();
+    genericName = json['generic_name']?.cast<String>();
   }
 
   Map<String, dynamic> toJson() {
@@ -263,23 +273,28 @@ class Item {
     data['halal_tag_status'] = isStoreHalalActive;
     data['is_halal'] = isHalalItem;
     data['is_prescription_required'] = isPrescriptionRequired;
-    data['weight'] = weight;
+    data['nutritions_name'] = nutritionsName;
+    data['allergies_name'] = allergiesName;
+    data['generic_name'] = genericName;
     return data;
   }
 }
 
 class CategoryIds {
-  String? id;
+  int? id;
+  int? position;
 
-  CategoryIds({this.id});
+  CategoryIds({this.id, this.position});
 
   CategoryIds.fromJson(Map<String, dynamic> json) {
-    id = json['id'].toString();
+    id = int.tryParse(json['id'].toString())??0;
+    position = int.tryParse(json['position'].toString())??0;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
+    data['position'] = position;
     return data;
   }
 }

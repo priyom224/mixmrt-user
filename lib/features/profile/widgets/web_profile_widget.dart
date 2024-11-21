@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
+import 'package:sixam_mart/features/profile/widgets/notification_status_change_bottom_sheet.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
 import 'package:sixam_mart/common/controllers/theme_controller.dart';
 import 'package:sixam_mart/features/profile/controllers/profile_controller.dart';
+import 'package:sixam_mart/features/verification/screens/new_pass_screen.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/date_converter.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
@@ -56,7 +58,7 @@ class WebProfileWidget extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.bottomCenter,
                         child: Text(
-                          isLoggedIn ? '${profileController.userInfoModel!.fName} ${profileController.userInfoModel!.lName}' : 'guest_user'.tr,
+                          isLoggedIn ? '${profileController.userInfoModel?.fName ?? ''} ${profileController.userInfoModel?.lName ?? ''}' : 'guest_user'.tr,
                           style: robotoBold.copyWith(fontSize: Dimensions.fontSizeExtraLarge),
                     ))),
 
@@ -166,14 +168,15 @@ class WebProfileWidget extends StatelessWidget {
                   return ProfileButtonWidget(
                     icon: Icons.notifications, title: 'notification'.tr,
                     isButtonActive: authController.notification, onTap: () {
-                    authController.setNotificationActive(!authController.notification);
+                    Get.dialog(const Dialog(child: NotificationStatusChangeBottomSheet()));
+                    // authController.setNotificationActive(!authController.notification);
                   },
                   );
                 }) : const SizedBox(),
 
-                isLoggedIn ? profileController.userInfoModel!.socialId == null ? ProfileButtonWidget(icon: Icons.lock, title: 'change_password'.tr, onTap: () {
-                  Get.toNamed(RouteHelper.getResetPasswordRoute('', '', 'password-change'));
-                }) : const SizedBox() : const SizedBox(),
+                isLoggedIn && Get.find<SplashController>().configModel!.centralizeLoginSetup!.manualLoginStatus! ? ProfileButtonWidget(icon: Icons.lock, title: 'change_password'.tr, onTap: () {
+                  Get.dialog(const NewPassScreen(fromPasswordChange: true, fromDialog: true, resetToken: '', number: ''));
+                }) : const SizedBox(),
 
                 isLoggedIn ? ProfileButtonWidget(icon: Icons.edit, title: 'edit_profile'.tr, onTap: () {
                   Get.toNamed(RouteHelper.getUpdateProfileRoute());

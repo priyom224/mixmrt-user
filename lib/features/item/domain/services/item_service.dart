@@ -169,7 +169,7 @@ class ItemService implements ItemServiceInterface {
   }
 
   @override
-  String prepareVariationType(List<ChoiceOptions>? choiceOptions, List<int>? variationIndex) {
+  Future<String> prepareVariationType(List<ChoiceOptions>? choiceOptions, List<int>? variationIndex) async{
     String variationType = '';
     if(!ModuleHelper.getModuleConfig(ModuleHelper.getModule() != null ? ModuleHelper.getModule()!.moduleType : ModuleHelper.getCacheModule()!.moduleType).newVariation!){
       List<String> variationList = [];
@@ -201,7 +201,7 @@ class ItemService implements ItemServiceInterface {
   }
 
   @override
-  int setQuantity(bool isIncrement, bool moduleStock, int? stock, int qty, int? quantityLimit, {bool getxSnackBar = false}) {
+  Future<int> setQuantity(bool isIncrement, bool moduleStock, int? stock, int qty, int? quantityLimit, {bool getxSnackBar = false}) async{
     int quantity = qty;
     if (isIncrement) {
       if(moduleStock && quantity >= stock!) {
@@ -279,7 +279,7 @@ class ItemService implements ItemServiceInterface {
   }
 
   @override
-  int isExistInCartForBottomSheet(List<CartModel> cartList, int? itemId, int? cartIndex, List<List<bool?>>? variations) {
+  Future<int> isExistInCartForBottomSheet(List<CartModel> cartList, int? itemId, int? cartIndex, List<List<bool?>>? variations) async{
     for(int index=0; index<cartList.length; index++) {
       if(cartList[index].item!.id == itemId) {
         if((index == cartIndex)) {

@@ -23,8 +23,9 @@ class PaymentWebViewScreen extends StatefulWidget {
   final String contactNumber;
   final String? subscriptionUrl;
   final int? storeId;
+  final bool? createAccount;
   const PaymentWebViewScreen({super.key, required this.orderModel, required this.isCashOnDelivery, this.addFundUrl, required this.paymentMethod,
-    required this.guestId, required this.contactNumber, this.subscriptionUrl, this.storeId});
+    required this.guestId, required this.contactNumber, this.subscriptionUrl, this.storeId, this.createAccount = false});
 
   @override
   PaymentScreenState createState() => PaymentScreenState();
@@ -37,6 +38,7 @@ class PaymentScreenState extends State<PaymentWebViewScreen> {
   double? _maximumCodOrderAmount;
   PullToRefreshController? pullToRefreshController;
   InAppWebViewController? webViewController;
+  final GlobalKey webViewKey = GlobalKey();
 
   @override
   void initState() {
@@ -81,7 +83,7 @@ class PaymentScreenState extends State<PaymentWebViewScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvoked: (value) async {
+      onPopInvokedWithResult: (didPop, result) async {
         _exitApp();
       },
       child: Scaffold(
@@ -90,16 +92,16 @@ class PaymentScreenState extends State<PaymentWebViewScreen> {
         body: Stack(
           children: [
             InAppWebView(
-              initialUrlRequest: URLRequest(url: Uri.parse(selectedUrl)),
+              key: webViewKey,
+              initialUrlRequest: URLRequest(url: WebUri(selectedUrl)),
               initialUserScripts: UnmodifiableListView<UserScript>([]),
               pullToRefreshController: pullToRefreshController,
-              initialOptions: InAppWebViewGroupOptions(
-                crossPlatform: InAppWebViewOptions(
-                  useShouldOverrideUrlLoading: true,
-                  mediaPlaybackRequiresUserGesture: false,
-                ),
-                android: AndroidInAppWebViewOptions(useHybridComposition: true),
-                ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+              initialSettings: InAppWebViewSettings(
+                isInspectable: kDebugMode,
+                mediaPlaybackRequiresUserGesture: false,
+                allowsInlineMediaPlayback: true,
+                iframeAllow: "camera; microphone",
+                iframeAllowFullscreen: true,
               ),
               onWebViewCreated: (controller) async {
                 webViewController = controller;
@@ -108,7 +110,8 @@ class PaymentScreenState extends State<PaymentWebViewScreen> {
                 Get.find<OrderController>().paymentRedirect(
                   url: url.toString(), canRedirect: _canRedirect, onClose: (){} ,
                   addFundUrl: widget.addFundUrl, orderID: widget.orderModel.id.toString(), contactNumber: widget.contactNumber,
-                  subscriptionUrl: widget.subscriptionUrl, storeId: widget.storeId,
+                  subscriptionUrl: widget.subscriptionUrl, storeId: widget.storeId, createAccount: widget.createAccount!,
+                  guestId: widget.guestId,
                 );
                 setState(() {
                   _isLoading = true;
@@ -132,7 +135,8 @@ class PaymentScreenState extends State<PaymentWebViewScreen> {
                 Get.find<OrderController>().paymentRedirect(
                   url: url.toString(), canRedirect: _canRedirect, onClose: (){} ,
                   addFundUrl: widget.addFundUrl, orderID: widget.orderModel.id.toString(), contactNumber: widget.contactNumber,
-                  subscriptionUrl: widget.subscriptionUrl, storeId: widget.storeId,
+                  subscriptionUrl: widget.subscriptionUrl, storeId: widget.storeId, createAccount: widget.createAccount!,
+                  guestId: widget.guestId,
                 );
                 // _redirect(url.toString());
               },
@@ -165,6 +169,7 @@ class PaymentScreenState extends State<PaymentWebViewScreen> {
         maxCodOrderAmount: _maximumCodOrderAmount,
         orderType: widget.orderModel.orderType,
         isCashOnDelivery: widget.isCashOnDelivery,
+        guestId: widget.guestId,
       ));
     }else{
       return Get.dialog(FundPaymentDialogWidget(isSubscription: widget.subscriptionUrl != null && widget.subscriptionUrl!.isNotEmpty));

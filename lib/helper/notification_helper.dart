@@ -25,24 +25,32 @@ class NotificationHelper {
     var androidInitialize = const AndroidInitializationSettings('notification_icon');
     var iOSInitialize = const DarwinInitializationSettings();
     var initializationsSettings = InitializationSettings(android: androidInitialize, iOS: iOSInitialize);
-    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()!.requestNotificationsPermission();
+    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation < AndroidFlutterLocalNotificationsPlugin>()!.requestNotificationsPermission();
     flutterLocalNotificationsPlugin.initialize(initializationsSettings, onDidReceiveNotificationResponse: (NotificationResponse load) async {
       try{
-        NotificationBodyModel payload;
         if(load.payload!.isNotEmpty) {
-          payload = NotificationBodyModel.fromJson(jsonDecode(load.payload!));
-          if(payload.notificationType == NotificationType.order) {
-            if(AuthHelper.isGuestLoggedIn()){
-              Get.to(()=> const DashboardScreen(pageIndex: 3, fromSplash: false));
-            } else {
-              Get.offAllNamed(RouteHelper.getOrderDetailsRoute(int.parse(payload.orderId.toString()), fromNotification: true));
-            }
-          } else if(payload.notificationType == NotificationType.general) {
-            Get.offAllNamed(RouteHelper.getNotificationRoute(fromNotification: true));
-          } else{
-            Get.offAllNamed(RouteHelper.getChatRoute(notificationBody: payload, conversationID: payload.conversationId, fromNotification: true));
-          }
+          NotificationBodyModel payload = NotificationBodyModel.fromJson(jsonDecode(load.payload!));
+
+          final Map<NotificationType, Function> notificationActions = {
+            NotificationType.order: () {
+              if(AuthHelper.isGuestLoggedIn()) {
+                Get.to(()=> const DashboardScreen(pageIndex: 3, fromSplash: false));
+              } else {
+                Get.toNamed(RouteHelper.getOrderDetailsRoute(int.parse(payload.orderId.toString()), fromNotification: true));
+              }
+            },
+            NotificationType.block: () => Get.toNamed(RouteHelper.getSignInRoute(RouteHelper.notification)),
+            NotificationType.unblock: () => Get.toNamed(RouteHelper.getSignInRoute(RouteHelper.notification)),
+            NotificationType.message: () => Get.toNamed(RouteHelper.getChatRoute(notificationBody: payload, conversationID: payload.conversationId, fromNotification: true)),
+            NotificationType.otp: () => null,
+            NotificationType.add_fund: () => Get.toNamed(RouteHelper.getWalletRoute(fromNotification: true)),
+            NotificationType.referral_earn: () => Get.toNamed(RouteHelper.getWalletRoute(fromNotification: true)),
+            NotificationType.cashback: () => Get.toNamed(RouteHelper.getWalletRoute(fromNotification: true)),
+            NotificationType.loyalty_point: () => Get.toNamed(RouteHelper.getLoyaltyRoute(fromNotification: true)),
+            NotificationType.general: () => Get.toNamed(RouteHelper.getNotificationRoute(fromNotification: true)),
+          };
+
+          notificationActions[payload.notificationType]?.call();
         }
       }catch (_) {}
       return;
@@ -76,13 +84,13 @@ class NotificationHelper {
           Get.find<ChatController>().getConversationList(1);
         }
         NotificationHelper.showNotification(message, flutterLocalNotificationsPlugin);
+      }else if(message.data['type'] == 'demo_reset'){
       }else {
         NotificationHelper.showNotification(message, flutterLocalNotificationsPlugin);
         if(AuthHelper.isLoggedIn()) {
           Get.find<OrderController>().getRunningOrders(1);
           Get.find<OrderController>().getHistoryOrders(1);
           Get.find<NotificationController>().getNotificationList(true);
-
         }
       }
 
@@ -97,12 +105,9 @@ class NotificationHelper {
       PayloadModel payload = PayloadModel.fromJson(payloadData);
 
       if(kIsWeb) {
-        showDialog(
-            context: Get.context!,
-            builder: (context) => Center(
-              child: NotificationPopUpDialogWidget(payload),
-            )
-        );
+        showDialog(context: Get.context!, builder: (context) => Center(
+          child: NotificationPopUpDialogWidget(payload),
+        ));
       }
     });
 
@@ -113,13 +118,21 @@ class NotificationHelper {
       try{
         if(message.data.isNotEmpty) {
           NotificationBodyModel notificationBody = convertNotification(message.data);
-          if(notificationBody.notificationType == NotificationType.order) {
-            Get.offAllNamed(RouteHelper.getOrderDetailsRoute(int.parse(message.data['order_id']), fromNotification: true));
-          } else if(notificationBody.notificationType == NotificationType.general) {
-            Get.offAllNamed(RouteHelper.getNotificationRoute(fromNotification: true));
-          } else{
-            Get.offAllNamed(RouteHelper.getChatRoute(notificationBody: notificationBody, conversationID: notificationBody.conversationId, fromNotification: true));
-          }
+
+          final Map<NotificationType, Function> notificationActions = {
+            NotificationType.order: () => Get.toNamed(RouteHelper.getOrderDetailsRoute(int.parse(message.data['order_id']), fromNotification: true)),
+            NotificationType.block: () => Get.toNamed(RouteHelper.getSignInRoute(RouteHelper.notification)),
+            NotificationType.unblock: () => Get.toNamed(RouteHelper.getSignInRoute(RouteHelper.notification)),
+            NotificationType.message: () => Get.toNamed(RouteHelper.getChatRoute(notificationBody: notificationBody, conversationID: notificationBody.conversationId, fromNotification: true)),
+            NotificationType.otp: () => null,
+            NotificationType.add_fund: () => Get.toNamed(RouteHelper.getWalletRoute(fromNotification: true)),
+            NotificationType.referral_earn: () => Get.toNamed(RouteHelper.getWalletRoute(fromNotification: true)),
+            NotificationType.cashback: () => Get.toNamed(RouteHelper.getWalletRoute(fromNotification: true)),
+            NotificationType.loyalty_point: () => Get.toNamed(RouteHelper.getLoyaltyRoute(fromNotification: true)),
+            NotificationType.general: () => Get.toNamed(RouteHelper.getNotificationRoute(fromNotification: true)),
+          };
+
+          notificationActions[notificationBody.notificationType]?.call();
         }
       }catch (_) {}
     });
@@ -153,7 +166,7 @@ class NotificationHelper {
 
   static Future<void> showTextNotification(String title, String body, String orderID, NotificationBodyModel? notificationBody, FlutterLocalNotificationsPlugin fln) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      '6ammart', '6ammart', playSound: true,
+      '6ammart', AppConstants.appName, playSound: true,
       importance: Importance.max, priority: Priority.max, sound: RawResourceAndroidNotificationSound('notification'),
     );
     const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
@@ -166,7 +179,7 @@ class NotificationHelper {
       contentTitle: title, htmlFormatContentTitle: true,
     );
     AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      '6ammart', '6ammart', importance: Importance.max,
+      '6ammart', AppConstants.appName, importance: Importance.max,
       styleInformation: bigTextStyleInformation, priority: Priority.max, playSound: true,
       sound: const RawResourceAndroidNotificationSound('notification'),
     );
@@ -183,7 +196,7 @@ class NotificationHelper {
       summaryText: body, htmlFormatSummaryText: true,
     );
     final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      '6ammart', '6ammart',
+      '6ammart', AppConstants.appName,
       largeIcon: FilePathAndroidBitmap(largeIconPath), priority: Priority.max, playSound: true,
       styleInformation: bigPictureStyleInformation, importance: Importance.max,
       sound: const RawResourceAndroidNotificationSound('notification'),
@@ -201,20 +214,54 @@ class NotificationHelper {
     return filePath;
   }
 
-  static NotificationBodyModel convertNotification(Map<String, dynamic> data){
-    if(data['type'] == 'general' || data['type'] == 'referral_code') {
-      return NotificationBodyModel(notificationType: NotificationType.general);
-    }else if(data['type'] == 'order_status') {
-      return NotificationBodyModel(notificationType: NotificationType.order, orderId: int.parse(data['order_id']));
-    }else {
-      return NotificationBodyModel(
-        notificationType: NotificationType.message,
-        deliverymanId: data['sender_type'] == 'delivery_man' ? 0 : null,
-        adminId: data['sender_type'] == 'admin' ? 0 : null,
-        restaurantId: data['sender_type'] == 'vendor' ? 0 : null,
-        conversationId: int.parse(data['conversation_id'].toString()),
-      );
+  static NotificationBodyModel convertNotification(Map<String, dynamic> data) {
+    final type = data['type'];
+
+    switch (type) {
+      case 'referral_code':
+        return NotificationBodyModel(notificationType: NotificationType.general);
+      case 'referral_earn':
+        return NotificationBodyModel(notificationType: NotificationType.referral_earn);
+      case 'cashback':
+        return NotificationBodyModel(notificationType: NotificationType.cashback);
+      case 'loyalty_point':
+        return NotificationBodyModel(notificationType: NotificationType.loyalty_point);
+      case 'otp':
+        return NotificationBodyModel(notificationType: NotificationType.otp);
+      case 'add_fund':
+        return NotificationBodyModel(notificationType: NotificationType.add_fund);
+      case 'block':
+        return NotificationBodyModel(notificationType: NotificationType.block);
+      case 'unblock':
+        return NotificationBodyModel(notificationType: NotificationType.unblock);
+      case 'order_status':
+        return _handleOrderNotification(data);
+      case 'message':
+        return _handleMessageNotification(data);
+      default:
+        return NotificationBodyModel(notificationType: NotificationType.general);
     }
+  }
+
+  static NotificationBodyModel _handleOrderNotification(Map<String, dynamic> data) {
+    final orderId = data['order_id'];
+    return NotificationBodyModel(
+      orderId: int.tryParse(orderId) ?? 0,
+      notificationType: NotificationType.order,
+    );
+  }
+
+  static NotificationBodyModel _handleMessageNotification(Map<String, dynamic> data) {
+    final conversationId = data['conversation_id'];
+    final senderType = data['sender_type'];
+
+    return NotificationBodyModel(
+      notificationType: NotificationType.message,
+      deliverymanId: senderType == 'delivery_man' ? 0 : null,
+      adminId: senderType == 'admin' ? 0 : null,
+      restaurantId: senderType == 'vendor' ? 0 : null,
+      conversationId: int.parse(conversationId.toString()),
+    );
   }
 
 }

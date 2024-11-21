@@ -1,7 +1,10 @@
+import 'package:sixam_mart/common/widgets/cart_count_view.dart';
 import 'package:sixam_mart/common/widgets/corner_banner/banner.dart';
 import 'package:sixam_mart/common/widgets/corner_banner/corner_discount_tag.dart';
 import 'package:sixam_mart/common/widgets/custom_asset_image_widget.dart';
+import 'package:sixam_mart/common/widgets/custom_favourite_widget.dart';
 import 'package:sixam_mart/common/widgets/custom_ink_well.dart';
+import 'package:sixam_mart/common/widgets/hover/text_hover.dart';
 import 'package:sixam_mart/features/item/controllers/item_controller.dart';
 import 'package:sixam_mart/features/language/controllers/language_controller.dart';
 import 'package:sixam_mart/features/splash/controllers/splash_controller.dart';
@@ -9,7 +12,6 @@ import 'package:sixam_mart/features/favourite/controllers/favourite_controller.d
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/common/models/module_model.dart';
 import 'package:sixam_mart/features/store/domain/models/store_model.dart';
-import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/date_converter.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
@@ -18,11 +20,9 @@ import 'package:sixam_mart/util/dimensions.dart';
 import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/util/styles.dart';
 import 'package:sixam_mart/common/widgets/custom_image.dart';
-import 'package:sixam_mart/common/widgets/custom_snackbar.dart';
 import 'package:sixam_mart/common/widgets/discount_tag.dart';
 import 'package:sixam_mart/common/widgets/not_available_widget.dart';
 import 'package:sixam_mart/common/widgets/organic_tag.dart';
-import 'package:sixam_mart/common/widgets/rating_bar.dart';
 import 'package:sixam_mart/features/store/screens/store_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -51,7 +51,13 @@ class ItemWidget extends StatelessWidget {
     double? discount;
     String? discountType;
     bool isAvailable;
-    // bool haveItemImage = (isStore ? true : item!.image != null);
+    String genericName = '';
+
+    if(!isStore && item!.genericName != null && item!.genericName!.isNotEmpty) {
+      for (String name in item!.genericName!) {
+        genericName += name;
+      }
+    }
     if(isStore) {
       discount = store!.discount != null ? store!.discount!.discount : 0;
       discountType = store!.discount != null ? store!.discount!.discountType : 'percent';
@@ -102,138 +108,176 @@ class ItemWidget extends StatelessWidget {
             },
             radius: Dimensions.radiusDefault,
             padding: ResponsiveHelper.isDesktop(context) ? EdgeInsets.all(fromCartSuggestion ? Dimensions.paddingSizeExtraSmall : Dimensions.paddingSizeSmall) : const EdgeInsets.symmetric(horizontal: Dimensions.paddingSizeSmall, vertical: Dimensions.paddingSizeExtraSmall),
-            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            child: TextHover(
+              builder: (hovered) {
+                return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
 
-              Expanded(child: Padding(
-                padding: EdgeInsets.symmetric(vertical: desktop ? 0 : Dimensions.paddingSizeExtraSmall),
-                child: Row(children: [
+                  Expanded(child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: desktop ? 0 : Dimensions.paddingSizeExtraSmall),
+                    child: Row(children: [
 
-                  Stack(children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
-                      child: CustomImage(
-                        image: '${isStore ? store != null ? store!.logoFullUrl : '' : item!.imageFullUrl}',
-                        height: imageHeight ?? (desktop ? 120 : length == null ? 100 : 65), width: imageWidth ?? (desktop ? 120 : 80), fit: BoxFit.cover,
-                      ),
-                    ),
-
-                    (isStore || isCornerTag!) ? DiscountTag(
-                      discount: discount, discountType: discountType,
-                      freeDelivery: isStore ? store!.freeDelivery : false,
-                    ) : const SizedBox(),
-
-                    !isStore ? OrganicTag(item: item!, placeInImage: true) : const SizedBox(),
-
-                    isAvailable ? const SizedBox() : NotAvailableWidget(isStore: isStore),
-                  ]),
-                  const SizedBox(width: Dimensions.paddingSizeSmall),
-
-                  Expanded(
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.center, children: [
-
-                      Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-                        Text(
-                          isStore ? store!.name! : item!.name!,
-                          style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
-                          maxLines: 1, overflow: TextOverflow.ellipsis,
+                      Stack(children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(Dimensions.radiusDefault),
+                          child: CustomImage(
+                            isHovered: hovered,
+                            image: '${isStore ? store != null ? store!.logoFullUrl : '' : item!.imageFullUrl}',
+                            height: imageHeight ?? (desktop ? 120 : length == null ? 100 : 90), width: imageWidth ?? (desktop ? 120 : 90), fit: BoxFit.cover,
+                          ),
                         ),
-                        const SizedBox(width: Dimensions.paddingSizeExtraSmall),
 
-                        (!isStore && Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!)
-                            ? Image.asset(item != null && item!.veg == 0 ? Images.nonVegImage : Images.vegImage,
-                            height: 10, width: 10, fit: BoxFit.contain) : const SizedBox(),
-
-                        SizedBox(width: item!.isStoreHalalActive! && item!.isHalalItem! ? Dimensions.paddingSizeExtraSmall : 0),
-
-                        !isStore && item!.isStoreHalalActive! && item!.isHalalItem! ? const CustomAssetImageWidget(
-                            Images.halalTag, height: 13, width: 13) : const SizedBox(),
-
-                      ]),
-                      SizedBox(height: isStore ? Dimensions.paddingSizeExtraSmall : 0),
-
-                      (isStore ? store!.address != null : item!.storeName != null) ? Text(
-                        isStore ? store!.address ?? '' : item!.storeName ?? '',
-                        style: robotoRegular.copyWith(
-                          fontSize: Dimensions.fontSizeExtraSmall,
-                          color: Theme.of(context).disabledColor,
-                        ),
-                        maxLines: 1, overflow: TextOverflow.ellipsis,
-                      ) : const SizedBox(),
-                      SizedBox(height: ((desktop || isStore) && (isStore ? store!.address != null : item!.storeName != null)) ? 5 : 0),
-
-                      !isStore ? RatingBar(
-                        rating: isStore ? store!.avgRating : item!.avgRating, size: desktop ? 15 : 12,
-                        ratingCount: isStore ? store!.ratingCount : item!.ratingCount,
-                      ) : const SizedBox(),
-                      SizedBox(height: (!isStore && desktop) ? Dimensions.paddingSizeExtraSmall : 0),
-
-                      (Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item != null && item!.unitType != null) ? Text(
-                        '(${ item!.unitType ?? ''})',
-                        style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).hintColor),
-                      ) : const SizedBox(),
-
-                      isStore ? RatingBar(
-                        rating: isStore ? store!.avgRating : item!.avgRating, size: desktop ? 15 : 12,
-                        ratingCount: isStore ? store!.ratingCount : item!.ratingCount,
-                      ) : Row(children: [
-                        Text(
-                          PriceConverter.convertPrice(item!.price, discount: discount, discountType: discountType),
-                          style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall), textDirection: TextDirection.ltr,
-                        ),
-                        SizedBox(width: discount! > 0 ? Dimensions.paddingSizeExtraSmall : 0),
-
-                        discount > 0 ? Text(
-                          PriceConverter.convertPrice(item!.price),
-                          style: robotoMedium.copyWith(
-                            fontSize: Dimensions.fontSizeExtraSmall,
-                            color: Theme.of(context).disabledColor,
-                            decoration: TextDecoration.lineThrough,
-                          ), textDirection: TextDirection.ltr,
+                        (isStore || isCornerTag!) ? DiscountTag(
+                          discount: discount, discountType: discountType,
+                          freeDelivery: isStore ? store!.freeDelivery : false,
                         ) : const SizedBox(),
+
+                        !isStore ? OrganicTag(item: item!, placeInImage: true) : const SizedBox(),
+
+                        isAvailable ? const SizedBox() : NotAvailableWidget(isStore: isStore),
+
+                        Positioned(
+                          top: 5, left: 5,
+                          child: GetBuilder<FavouriteController>(builder: (favouriteController) {
+                            bool isWished = isStore ? favouriteController.wishStoreIdList.contains(store!.id) : favouriteController.wishItemIdList.contains(item!.id);
+                            return CustomFavouriteWidget(
+                              isWished: isWished,
+                              isStore: isStore,
+                              store: store,
+                              item: item,
+                            );
+                          }),
+                        ),
+                      ]),
+                      const SizedBox(width: Dimensions.paddingSizeSmall),
+
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.start, children: [
+
+                          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                            Flexible(
+                              child: Text(
+                                isStore ? store!.name! : item!.name!,
+                                style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
+                                maxLines: 1, overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+
+                            (!isStore && Get.find<SplashController>().configModel!.moduleConfig!.module!.vegNonVeg! && Get.find<SplashController>().configModel!.toggleVegNonVeg!)
+                                ? Image.asset(item != null && item!.veg == 0 ? Images.nonVegImage : Images.vegImage,
+                                height: 10, width: 10, fit: BoxFit.contain) : const SizedBox(),
+
+                            (Get.find<SplashController>().configModel!.moduleConfig!.module!.unit! && item != null && item!.unitType != null) ? Text(
+                              '(${ item!.unitType ?? ''})',
+                              style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeExtraSmall, color: Theme.of(context).hintColor),
+                            ) : const SizedBox(),
+
+                            SizedBox(width: item!.isStoreHalalActive! && item!.isHalalItem! ? Dimensions.paddingSizeExtraSmall : 0),
+
+                            !isStore && item!.isStoreHalalActive! && item!.isHalalItem! ? const CustomAssetImageWidget(
+                                Images.halalTag, height: 13, width: 13) : const SizedBox(),
+
+                            SizedBox(width: ResponsiveHelper.isDesktop(context) ? 20 : 0),
+                          ]),
+                          const SizedBox(height: 3),
+
+                          (isStore ? store!.address != null : item!.storeName != null) ? Text(
+                            isStore ? store!.address ?? '' : item!.storeName ?? '',
+                            style: robotoRegular.copyWith(
+                              fontSize: Dimensions.fontSizeExtraSmall,
+                              color: Theme.of(context).disabledColor,
+                            ),
+                            maxLines: 1, overflow: TextOverflow.ellipsis,
+                          ) : const SizedBox(),
+
+                          (genericName.isNotEmpty) ? Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 5.0),
+                              child: Text(
+                                genericName,
+                                style: robotoMedium.copyWith(
+                                  fontSize: Dimensions.fontSizeSmall,
+                                  color: Theme.of(context).disabledColor,
+                                ),
+                                maxLines: 1, overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ) : const SizedBox(),
+                          SizedBox(height: ((desktop || isStore) && (isStore ? store!.address != null : item!.storeName != null)) ? 3 : 3),
+
+                          !isStore && (item!.ratingCount! > 0) ? Row(children: [
+
+                            Icon(Icons.star, size: 16, color: Theme.of(context).primaryColor),
+                            const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+
+                            Text(
+                              item!.avgRating!.toStringAsFixed(1),
+                              style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall),
+                            ),
+                            const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+
+                            Text(
+                              '(${item!.ratingCount})',
+                              style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
+                            ),
+
+                          ]) : const SizedBox(),
+
+                          SizedBox(height: (!isStore && desktop) || (!isStore && (item!.ratingCount! > 0)) ? 3 : 0),
+
+                          isStore && (store != null && store!.ratingCount! > 0) ? Row(children: [
+
+                            Icon(Icons.star, size: 16, color: Theme.of(context).primaryColor),
+                            const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+
+                            Text(
+                              store!.avgRating!.toStringAsFixed(1),
+                              style: robotoMedium,
+                            ),
+                            const SizedBox(width: Dimensions.paddingSizeExtraSmall),
+
+                            Text(
+                              '(${store!.ratingCount})',
+                              style: robotoRegular.copyWith(fontSize: Dimensions.fontSizeSmall, color: Theme.of(context).hintColor),
+                            ),
+
+                          ]) : Row(children: [
+                            Text(
+                              PriceConverter.convertPrice(item!.price, discount: discount, discountType: discountType),
+                              style: robotoMedium.copyWith(fontSize: Dimensions.fontSizeSmall), textDirection: TextDirection.ltr,
+                            ),
+                            SizedBox(width: discount! > 0 ? Dimensions.paddingSizeExtraSmall : 0),
+
+                            discount > 0 ? Text(
+                              PriceConverter.convertPrice(item!.price),
+                              style: robotoMedium.copyWith(
+                                fontSize: Dimensions.fontSizeExtraSmall,
+                                color: Theme.of(context).disabledColor,
+                                decoration: TextDecoration.lineThrough,
+                              ), textDirection: TextDirection.ltr,
+                            ) : const SizedBox(),
+                          ]),
+
+                        ]),
+                      ),
+
+                      Column(mainAxisAlignment: isStore ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween, children: [
+
+                        const SizedBox(),
+
+                        CartCountView(
+                          item: item!,
+                          index: index,
+                        ),
+
                       ]),
 
                     ]),
-                  ),
+                  )),
 
-                  Column(mainAxisAlignment: isStore ? MainAxisAlignment.center : MainAxisAlignment.spaceBetween, children: [
-
-                    const SizedBox(),
-
-                    fromCartSuggestion ? Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
-                      child: Icon(Icons.add, color: Theme.of(context).cardColor, size: 12),
-                    ) : GetBuilder<FavouriteController>(builder: (favouriteController) {
-                      bool isWished = isStore ? favouriteController.wishStoreIdList.contains(store!.id)
-                          : favouriteController.wishItemIdList.contains(item!.id);
-                      return InkWell(
-                        onTap: !favouriteController.isRemoving ? () {
-                          if(AuthHelper.isLoggedIn()) {
-                            isWished ? favouriteController.removeFromFavouriteList(isStore ? store!.id : item!.id, isStore)
-                                : favouriteController.addToFavouriteList(item, store, isStore);
-                          }else {
-                            showCustomSnackBar('you_are_not_logged_in'.tr);
-                          }
-                        } : null,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: desktop ? Dimensions.paddingSizeSmall : 0),
-                          child: Icon(
-                            isWished ? Icons.favorite : Icons.favorite_border,  size: desktop ? 30 : 25,
-                            color: isWished ? Theme.of(context).primaryColor : Theme.of(context).disabledColor,
-                          ),
-                        ),
-                      );
-                    }),
-
-                  ]),
-
-                ]),
-              )),
-
-            ]),
+                ]);
+              }
+            ),
           ),
         ),
 

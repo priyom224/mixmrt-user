@@ -44,7 +44,7 @@ class SpecialOfferView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(bottom: Dimensions.paddingSizeDefault, right: Dimensions.paddingSizeDefault, top: Dimensions.paddingSizeDefault),
-                    child: ItemCard(item: discountedItemList[index], isPopularItem: false, isFood: isFood, isShop: isShop),
+                    child: ItemCard(item: discountedItemList[index], isPopularItem: false, isFood: isFood, isShop: isShop, index: index),
                   );
                   },
               ),
@@ -90,6 +90,7 @@ class ItemShimmerView extends StatelessWidget {
                     duration: const Duration(seconds: 2),
                     enabled: true,
                     child: Container(
+                      padding: const EdgeInsets.all(Dimensions.paddingSizeExtraSmall),
                       height: 285, width: 200,
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardColor,
@@ -100,7 +101,7 @@ class ItemShimmerView extends StatelessWidget {
                         Container(
                           height: 150, width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Colors.grey[300],
+                            color: Theme.of(context).shadowColor,
                             borderRadius: BorderRadius.circular(Dimensions.radiusLarge),
                           ),
                         ),
@@ -110,22 +111,30 @@ class ItemShimmerView extends StatelessWidget {
                           child: Column(children: [
 
                             Container(
-                              height: 20, width: 100,
-                              color: Colors.grey[300],
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).shadowColor,
+                                borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                              ),
+                              height: 15, width: 100,
                             ),
                             const SizedBox(height: Dimensions.paddingSizeSmall),
 
                             Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).shadowColor,
+                                borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                              ),
                               height: 20, width: 200,
-                              color: Colors.grey[300],
                             ),
                             const SizedBox(height: Dimensions.paddingSizeSmall),
 
                             Container(
-                              height: 20, width: 100,
-                              color: Colors.grey[300],
+                              height: 15, width: 100,
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).shadowColor,
+                                borderRadius: BorderRadius.circular(Dimensions.radiusSmall),
+                              ),
                             ),
-
                           ]),
                         ),
                       ]),

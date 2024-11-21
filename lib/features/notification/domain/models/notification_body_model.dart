@@ -4,6 +4,17 @@ enum NotificationType{
   general,
   // ignore: constant_identifier_names
   referral_code,
+  otp,
+  // ignore: constant_identifier_names
+  add_fund,
+  block,
+  unblock,
+  //ignore: constant_identifier_names
+  referral_earn,
+  //ignore: constant_identifier_names
+  cashback,
+  //ignore: constant_identifier_names
+  loyalty_point
 }
 
 class NotificationBodyModel {
@@ -65,16 +76,21 @@ class NotificationBodyModel {
   }
 
   NotificationType convertToEnum(String? enumString) {
-    if(enumString == NotificationType.general.toString()) {
-      return NotificationType.general;
-    }else if(enumString == NotificationType.order.toString()) {
-      return NotificationType.order;
-    }else if(enumString == NotificationType.message.toString()) {
-      return NotificationType.message;
-    } else if(enumString == NotificationType.referral_code.toString()) {
-      return NotificationType.referral_code;
-    }
-    return NotificationType.general;
+    final Map<String, NotificationType> enumMap = {
+      NotificationType.general.toString(): NotificationType.general,
+      NotificationType.order.toString(): NotificationType.order,
+      NotificationType.message.toString(): NotificationType.message,
+      NotificationType.referral_code.toString(): NotificationType.referral_code,
+      NotificationType.otp.toString(): NotificationType.otp,
+      NotificationType.add_fund.toString(): NotificationType.add_fund,
+      NotificationType.block.toString(): NotificationType.block,
+      NotificationType.unblock.toString(): NotificationType.unblock,
+      NotificationType.referral_earn.toString(): NotificationType.referral_earn,
+      NotificationType.cashback.toString(): NotificationType.cashback,
+      NotificationType.loyalty_point.toString(): NotificationType.loyalty_point,
+    };
+
+    return enumMap[enumString] ?? NotificationType.general;
   }
 
 }

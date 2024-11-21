@@ -54,37 +54,43 @@ class CheckoutScreenState extends State<CheckoutScreen> {
   final JustTheController tooltipController2 = JustTheController();
   final JustTheController tooltipController3 = JustTheController();
 
-  double? weight = 0;
   double? _taxPercent = 0;
   bool? _isCashOnDeliveryActive = false;
   bool? _isDigitalPaymentActive = false;
   bool _isOfflinePaymentActive = false;
   List<CartModel?>? _cartList;
   bool _isWalletActive = false;
+  String _deliveryChargeForView = '';
 
   List<AddressModel> address = [];
   bool canCheckSmall = false;
   double? _payableAmount = 0;
+  double badWeatherChargeForToolTip = 0;
+  double extraChargeForToolTip = 0;
+  bool isPassedVariationPrice = false;
 
   final TextEditingController guestContactPersonNameController = TextEditingController();
   final TextEditingController guestContactPersonNumberController = TextEditingController();
   final TextEditingController guestEmailController = TextEditingController();
+  final TextEditingController guestPasswordController = TextEditingController();
+  final TextEditingController guestConfirmPasswordController = TextEditingController();
   final FocusNode guestNumberNode = FocusNode();
   final FocusNode guestEmailNode = FocusNode();
+  final FocusNode guestPasswordNode = FocusNode();
+  final FocusNode guestConfirmPasswordNode = FocusNode();
+
+  bool _firstTimeCheckPayment = false;
 
   @override
   void initState() {
     super.initState();
 
     initCall();
-    // Future.delayed(const Duration(seconds: 3), () {
-    //   _showCashBackMessage = true;
-    // });
   }
 
   Future<void> initCall() async {
       bool isLoggedIn = AuthHelper.isLoggedIn();
-      Get.find<CheckoutController>().setGuestAddress(null, isUpdate: false);
+      // Get.find<CheckoutController>().setGuestAddress(null, isUpdate: false);
       Get.find<CheckoutController>().streetNumberController.text = AddressHelper.getUserAddressFromSharedPref()!.streetNumber ?? '';
       Get.find<CheckoutController>().houseController.text = AddressHelper.getUserAddressFromSharedPref()!.house ?? '';
       Get.find<CheckoutController>().floorController.text = AddressHelper.getUserAddressFromSharedPref()!.floor ?? '';
@@ -94,6 +100,10 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       Get.find<CheckoutController>().setPreferenceTimeForView('', isUpdate: false);
 
       Get.find<CheckoutController>().getOfflineMethodList();
+
+      if(Get.find<CheckoutController>().isCreateAccount) {
+        Get.find<CheckoutController>().toggleCreateAccount(willUpdate: false);
+      }
 
       if(Get.find<CheckoutController>().isPartialPay){
         Get.find<CheckoutController>().changePartialPayment(isUpdate: false);
@@ -121,17 +131,6 @@ class CheckoutScreenState extends State<CheckoutScreen> {
           Get.find<CheckoutController>().initCheckoutData(_cartList![0]!.item!.storeId);
         }
       }
-
-      ///-----------Weight Summation---------///
-      if(_cartList != null) {
-        for (var cartModel in _cartList!) {
-          weight = (weight! + (cartModel!.item!.weight! * cartModel.quantity!));
-          debugPrint('========================>>weight $weight');
-        }
-      }
-      Get.find<CheckoutController>().getExtraCharge(weight);
-
-
       if(widget.storeId != null){
         Get.find<CheckoutController>().initCheckoutData(widget.storeId);
         Get.find<CouponController>().removeCouponData(false);
@@ -144,6 +143,16 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       );
       Get.find<CheckoutController>().tipController.text = Get.find<CheckoutController>().selectedTips != -1 ? AppConstants.tips[Get.find<CheckoutController>().selectedTips] : '';
 
+  }
+
+  void _setSinglePaymentActive() {
+    if((!_firstTimeCheckPayment && !_isCashOnDeliveryActive! && _isDigitalPaymentActive! && Get.find<SplashController>().configModel!.activePaymentMethodList!.length == 1) && ((!_isWalletActive && AuthHelper.isLoggedIn()) || !AuthHelper.isLoggedIn()) ) {
+      Future.delayed(const Duration(milliseconds: 600), (){
+        Get.find<CheckoutController>().setPaymentMethod(2, isUpdate: false);
+        Get.find<CheckoutController>().changeDigitalPaymentName(Get.find<SplashController>().configModel!.activePaymentMethodList![0].getWay!, willUpdate: false);
+        _firstTimeCheckPayment = true;
+      });
+    }
   }
 
   @override
@@ -175,7 +184,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
         Pivot? moduleData = _getModuleData(store: checkoutController.store);
         _isCashOnDeliveryActive = _checkCODActive(store: checkoutController.store);
         _isDigitalPaymentActive = _checkDigitalPaymentActive(store: checkoutController.store);
-        _isOfflinePaymentActive = Get.find<SplashController>().configModel!.offlinePaymentStatus! && _checkZoneOfflinePaymentOnOff(addressModel: AddressHelper.getUserAddressFromSharedPref());
+        _isOfflinePaymentActive = Get.find<SplashController>().configModel!.offlinePaymentStatus! && _checkZoneOfflinePaymentOnOff(addressModel: AddressHelper.getUserAddressFromSharedPref(), checkoutController: checkoutController);
         if(checkoutController.store != null) {
           todayClosed = checkoutController.isStoreClosed(true, checkoutController.store!.active!, checkoutController.store!.schedules);
           tomorrowClosed = checkoutController.isStoreClosed(false, checkoutController.store!.active!, checkoutController.store!.schedules);
@@ -208,17 +217,22 @@ class CheckoutScreenState extends State<CheckoutScreen> {
           double tax = _calculateTax(
             taxIncluded: taxIncluded, orderAmount: orderAmount, taxPercent: _taxPercent,
           );
+
           double additionalCharge =  Get.find<SplashController>().configModel!.additionalChargeStatus!
               ? Get.find<SplashController>().configModel!.additionCharge! : 0;
           double originalCharge = _calculateOriginalDeliveryCharge(
             store: checkoutController.store, address: AddressHelper.getUserAddressFromSharedPref()!,
             distance: checkoutController.distance, extraCharge: checkoutController.extraCharge,
-            cartList: _cartList,
           );
           double deliveryCharge = _calculateDeliveryCharge(
             store: checkoutController.store, address: AddressHelper.getUserAddressFromSharedPref()!, distance: checkoutController.distance,
             extraCharge: checkoutController.extraCharge, orderType: checkoutController.orderType!, orderAmount: orderAmount,
           );
+
+          if(checkoutController.orderType != 'take_away' && checkoutController.store != null) {
+            _deliveryChargeForView = (checkoutController.orderType == 'delivery' ? checkoutController.store!.freeDelivery! : true) ? 'free'.tr
+                : deliveryCharge != -1 ? PriceConverter.convertPrice(deliveryCharge) : 'calculating'.tr;
+          }
 
           double extraPackagingCharge = _calculateExtraPackagingCharge(checkoutController);
 
@@ -242,6 +256,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
             showCashBackSnackBar();
           }
 
+          _setSinglePaymentActive();
 
           return (checkoutController.distance != null && checkoutController.store != null) ? Column(
             children: [
@@ -270,6 +285,9 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                         guestNumberTextEditingController: guestContactPersonNumberController, guestNumberNode: guestNumberNode,
                         guestEmailController: guestEmailController, guestEmailNode: guestEmailNode,
                         tooltipController1: tooltipController1, tooltipController2: tooltipController2, dmTipsTooltipController: tooltipController3,
+                        guestPasswordController: guestPasswordController, guestConfirmPasswordController: guestConfirmPasswordController,
+                        guestPasswordNode: guestPasswordNode, guestConfirmPasswordNode: guestConfirmPasswordNode, variationPrice: isPassedVariationPrice ? variations : 0,
+                        deliveryChargeForView: _deliveryChargeForView, badWeatherCharge: badWeatherChargeForToolTip, extraChargeForToolTip: extraChargeForToolTip,
                       )),
                       const SizedBox(width: Dimensions.paddingSizeLarge),
 
@@ -282,7 +300,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                         isPrescriptionRequired: isPrescriptionRequired, checkoutButton: _orderPlaceButton(
                           checkoutController, todayClosed, tomorrowClosed, orderAmount,
                           deliveryCharge, tax, discount, total, maxCodOrderAmount, isPrescriptionRequired,
-                        ), referralDiscount: referralDiscount,
+                        ), referralDiscount: referralDiscount, variationPrice: isPassedVariationPrice ? variations : 0,
                       )),
                     ]),
                   ) : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -297,6 +315,9 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                       guestNumberTextEditingController: guestContactPersonNumberController, guestNumberNode: guestNumberNode,
                       guestEmailController: guestEmailController, guestEmailNode: guestEmailNode,
                       tooltipController1: tooltipController1, tooltipController2: tooltipController2, dmTipsTooltipController: tooltipController3,
+                      guestPasswordController: guestPasswordController, guestConfirmPasswordController: guestConfirmPasswordController,
+                      guestPasswordNode: guestPasswordNode, guestConfirmPasswordNode: guestConfirmPasswordNode, variationPrice: isPassedVariationPrice ? variations : 0,
+                      deliveryChargeForView: _deliveryChargeForView, badWeatherCharge: badWeatherChargeForToolTip, extraChargeForToolTip: extraChargeForToolTip,
                     ),
 
                     BottomSection(
@@ -308,7 +329,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                       isPrescriptionRequired: isPrescriptionRequired, checkoutButton: _orderPlaceButton(
                         checkoutController, todayClosed, tomorrowClosed, orderAmount, deliveryCharge,
                         tax, discount, total, maxCodOrderAmount, isPrescriptionRequired,
-                      ), referralDiscount: referralDiscount,
+                      ), referralDiscount: referralDiscount, variationPrice: isPassedVariationPrice ? variations : 0,
                     )
                   ]),
                 )),
@@ -362,7 +383,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       child: SafeArea(
         child: CustomButton(
           isLoading: checkoutController.isLoading,
-          buttonText: checkoutController.isPartialPay ? 'place_order'.tr : 'confirm_order'.tr,
+          buttonText: 'place_order'.tr,
           onPressed: checkoutController.acceptTerms ? () {
           bool isAvailable = true;
           DateTime scheduleStartDate = DateTime.now();
@@ -400,6 +421,12 @@ class CheckoutScreenState extends State<CheckoutScreen> {
             showCustomSnackBar('please_enter_contact_person_number'.tr);
           }else if(isGuestLogIn && checkoutController.orderType == 'take_away' && guestEmailController.text.isEmpty) {
             showCustomSnackBar('please_enter_contact_person_email'.tr);
+          }else if(isGuestLogIn && checkoutController.isCreateAccount && guestPasswordController.text.isEmpty) {
+            showCustomSnackBar('enter_password'.tr);
+          }else if(isGuestLogIn && checkoutController.isCreateAccount && guestConfirmPasswordController.text.isEmpty) {
+            showCustomSnackBar('enter_confirm_password'.tr);
+          }else if(isGuestLogIn && checkoutController.isCreateAccount && (guestPasswordController.text != guestConfirmPasswordController.text)) {
+            showCustomSnackBar('confirm_password_does_not_matched'.tr);
           }else if(isPrescriptionRequired && checkoutController.pickedPrescriptions.isEmpty) {
             showCustomSnackBar('you_must_upload_prescription_for_this_order'.tr);
           } else if(!_isCashOnDeliveryActive! && !_isDigitalPaymentActive! && !_isWalletActive) {
@@ -488,7 +515,6 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                     }
                   }
                 }
-
                 carts.add(OnlineCart(
                   cart.id, cart.item!.id, cart.isCampaign! ? cart.item!.id : null,
                   cart.discountedPrice.toString(), '',
@@ -524,7 +550,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
                 deliveryInstruction: checkoutController.selectedInstruction != -1 ? AppConstants.deliveryInstructionList[checkoutController.selectedInstruction] : '',
                 partialPayment: checkoutController.isPartialPay ? 1 : 0, guestId: isGuestLogIn ? int.parse(AuthHelper.getGuestId()) : 0,
                 isBuyNow: widget.fromCart ? 0 : 1, guestEmail: isGuestLogIn ? finalAddress.email : null,
-                extraPackagingAmount: Get.find<CartController>().needExtraPackage ? checkoutController.store!.extraPackagingAmount : 0, weight: weight.toString(),
+                extraPackagingAmount: Get.find<CartController>().needExtraPackage ? checkoutController.store!.extraPackagingAmount : 0,
+                createNewUser: checkoutController.isCreateAccount ? 1 : 0, password: guestPasswordController.text,
               );
 
               if(checkoutController.paymentMethodIndex == 3){
@@ -677,6 +704,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
         String? discountType = cartModel.item!.storeDiscount == 0 ? cartModel.item!.discountType : 'percent';
 
         if(Get.find<SplashController>().getModuleConfig(cartModel.item!.moduleType).newVariation!) {
+          isPassedVariationPrice = true;
           for(int index = 0; index< cartModel.item!.foodVariations!.length; index++) {
             for(int i=0; i<cartModel.item!.foodVariations![index].variationValues!.length; i++) {
               if(cartModel.foodVariations![index][i]!) {
@@ -828,9 +856,8 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     return subTotal;
   }
 
-  double _calculateOriginalDeliveryCharge({required Store? store, required AddressModel address, required double? distance, required double? extraCharge, required List<CartModel?>? cartList}) {
+  double _calculateOriginalDeliveryCharge({required Store? store, required AddressModel address, required double? distance, required double? extraCharge}) {
     double deliveryCharge = -1;
-    double weightCharge = 0;
 
     Pivot? moduleData;
     ZoneData? zoneData;
@@ -849,22 +876,6 @@ class CheckoutScreenState extends State<CheckoutScreen> {
         }
       }
     }
-    double? perKgCharge;
-    if(store?.selfDeliverySystem == 1){
-      perKgCharge = store?.perKgCharge;
-    }else {
-      perKgCharge = moduleData?.perKgCharge;
-    }
-
-    debugPrint('====>>$perKgCharge');
-
-    if(cartList != null) {
-      for (var cartModel in cartList) {
-        if(perKgCharge != null){
-          weightCharge = weightCharge + (cartModel!.item!.weight! * cartModel.quantity! * perKgCharge);
-        }
-      }
-    }
     double perKmCharge = 0;
     double minimumCharge = 0;
     double? maximumCharge = 0;
@@ -878,7 +889,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
       maximumCharge = moduleData.maximumShippingCharge;
     }
     if(store != null && distance != null) {
-      deliveryCharge = (distance * perKmCharge) + weightCharge;
+      deliveryCharge = distance * perKmCharge;
 
       if(deliveryCharge < minimumCharge) {
         deliveryCharge = minimumCharge;
@@ -888,10 +899,12 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     }
 
     if(store != null && store.selfDeliverySystem == 0 && extraCharge != null) {
+      extraChargeForToolTip = extraCharge;
       deliveryCharge = deliveryCharge + extraCharge;
     }
 
     if(store != null && store.selfDeliverySystem == 0 && zoneData!.increaseDeliveryFeeStatus == 1) {
+      badWeatherChargeForToolTip = (deliveryCharge * (zoneData.increaseDeliveryFee!/100));
       deliveryCharge = deliveryCharge + (deliveryCharge * (zoneData.increaseDeliveryFee!/100));
     }
 
@@ -899,7 +912,7 @@ class CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   double _calculateDeliveryCharge({required Store? store, required AddressModel address, required double? distance, required double? extraCharge, required double orderAmount, required String orderType}) {
-    double deliveryCharge = _calculateOriginalDeliveryCharge(store: store, address: address, distance: distance, extraCharge: extraCharge, cartList: _cartList);
+    double deliveryCharge = _calculateOriginalDeliveryCharge(store: store, address: address, distance: distance, extraCharge: extraCharge);
 
     if (orderType == 'take_away' || (store != null && store.freeDelivery!)
         || (Get.find<SplashController>().configModel!.freeDeliveryOver != null && orderAmount
@@ -924,11 +937,11 @@ class CheckoutScreenState extends State<CheckoutScreen> {
     );
   }
 
-  bool _checkZoneOfflinePaymentOnOff({required AddressModel? addressModel}) {
+  bool _checkZoneOfflinePaymentOnOff({required AddressModel? addressModel, required CheckoutController checkoutController}) {
     bool? status = false;
     ZoneData? zoneData;
     for (var data in addressModel!.zoneData!) {
-      if(data.id == addressModel.zoneId){
+      if(data.id == checkoutController.store?.zoneId) {
         zoneData = data;
         break;
       }

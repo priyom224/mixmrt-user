@@ -1,4 +1,3 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,7 +10,6 @@ import 'package:sixam_mart/features/location/domain/models/zone_response_model.d
 import 'package:sixam_mart/features/auth/domain/models/delivery_man_body.dart';
 import 'package:sixam_mart/features/auth/domain/models/delivery_man_vehicles_model.dart';
 import 'package:sixam_mart/features/auth/domain/services/deliveryman_registration_service_interface.dart';
-import 'package:sixam_mart/util/app_constants.dart';
 
 class DeliverymanRegistrationController extends GetxController implements GetxService {
   final DeliverymanRegistrationServiceInterface deliverymanRegistrationServiceInterface;
@@ -48,7 +46,7 @@ class DeliverymanRegistrationController extends GetxController implements GetxSe
   bool _spatialCheck = false;
   bool get spatialCheck => _spatialCheck;
 
-  final List<String> _identityTypeList = AppConstants.baseUrl.contains('zm') ? ['nrc', 'driving_license', 'passport'] : ['nid', 'driving_license', 'passport'];
+  final List<String> _identityTypeList = ['passport', 'driving_license', 'nid'];
   List<String> get identityTypeList => _identityTypeList;
 
   int _identityTypeIndex = 0;
@@ -83,9 +81,6 @@ class DeliverymanRegistrationController extends GetxController implements GetxSe
 
   bool _acceptTerms = true;
   bool get acceptTerms => _acceptTerms;
-
-  XFile? _pickedAgreement;
-  XFile? get pickedAgreement => _pickedAgreement;
 
   void showHidePass({bool isUpdate = true}){
     _showPassView = ! _showPassView;
@@ -259,15 +254,6 @@ class DeliverymanRegistrationController extends GetxController implements GetxSe
     _selectedZoneIndex = -1;
     _pickedImage = null;
     _pickedIdentities = [];
-    _pickedAgreement = null;
-    update();
-  }
-
-  void pickAgreement() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles( type: FileType.custom, allowedExtensions: ['png','jpg','jpeg','pdf','doc','docx','gif','txt','pptx','xlsx']);
-    if (result != null) {
-      _pickedAgreement = XFile(result.files.single.path!);
-    }
     update();
   }
 

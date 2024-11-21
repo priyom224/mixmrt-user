@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sixam_mart/common/models/module_model.dart';
+import 'package:sixam_mart/features/business/domain/models/package_model.dart';
 import 'package:sixam_mart/features/location/domain/models/zone_data_model.dart';
 import 'package:sixam_mart/features/auth/domain/models/store_body_model.dart';
 import 'package:sixam_mart/features/auth/domain/reposotories/deliveryman_registration_repository_interface.dart';
@@ -36,13 +37,18 @@ class StoreRegistrationService implements StoreRegistrationServiceInterface {
   }
 
   @override
-  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover, XFile? pickedTax, XFile? pickedRegistration) async {
-    return await storeRegistrationRepoInterface.registerStore(store, logo, cover, pickedTax, pickedRegistration);
+  Future<Response> registerStore(StoreBodyModel store, XFile? logo, XFile? cover) async {
+    return await storeRegistrationRepoInterface.registerStore(store, logo, cover);
   }
 
   @override
   Future<bool> checkInZone(String? lat, String? lng, int zoneId) async {
     return await storeRegistrationRepoInterface.checkInZone(lat, lng, zoneId);
+  }
+
+  @override
+  Future<PackageModel?> getPackageList() async {
+    return await storeRegistrationRepoInterface.getList();
   }
 
 }

@@ -5,6 +5,7 @@ import 'package:sixam_mart/features/order/domain/models/order_cancellation_body.
 import 'package:sixam_mart/features/order/domain/models/order_details_model.dart';
 import 'package:sixam_mart/features/order/domain/models/order_model.dart';
 import 'package:sixam_mart/features/order/domain/models/refund_model.dart';
+import 'package:sixam_mart/features/order/domain/models/support_model.dart';
 import 'package:sixam_mart/features/order/domain/repositories/order_repository_interface.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/util/app_constants.dart';
@@ -28,10 +29,10 @@ class OrderRepository implements OrderRepositoryInterface {
   }
 
   @override
-  Future<Response> switchToCOD(String? orderID) async {
+  Future<Response> switchToCOD(String? orderID, {String? guestId}) async {
     Map<String, String> data = {'_method': 'put', 'order_id': orderID!};
-    if(AuthHelper.isGuestLoggedIn()) {
-      data.addAll({'guest_id': AuthHelper.getGuestId()});
+    if(AuthHelper.isGuestLoggedIn() || guestId != null) {
+      data.addAll({'guest_id': guestId ?? AuthHelper.getGuestId()});
     }
     return await apiClient.postData(AppConstants.codSwitchUri, data);
   }
@@ -47,11 +48,11 @@ class OrderRepository implements OrderRepositoryInterface {
   }
 
   @override
-  Future<bool> cancelOrder(String orderID, String? reason) async {
+  Future<bool> cancelOrder(String orderID, String? reason, {String? guestId}) async {
     bool success = false;
     Map<String, String> data = {'_method': 'put', 'order_id': orderID, 'reason': reason!};
-    if(AuthHelper.isGuestLoggedIn()){
-      data.addAll({'guest_id': AuthHelper.getGuestId()});
+    if(AuthHelper.isGuestLoggedIn() || guestId != null){
+      data.addAll({'guest_id': guestId ?? AuthHelper.getGuestId()});
     }
     Response response = await apiClient.postData(AppConstants.orderCancelUri, data);
     if (response.statusCode == 200) {
@@ -77,7 +78,7 @@ class OrderRepository implements OrderRepositoryInterface {
   }
 
   @override
-  Future getList({int? offset, bool isRunningOrder = false, bool isHistoryOrder = false, bool isCancelReasons = false, bool isRefundReasons = false, bool fromDashboard = false}) async {
+  Future getList({int? offset, bool isRunningOrder = false, bool isHistoryOrder = false, bool isCancelReasons = false, bool isRefundReasons = false, bool fromDashboard = false, bool isSupportReasons = false}) async {
     if(isRunningOrder) {
       return await _getRunningOrderList(offset!, fromDashboard);
     } else if(isHistoryOrder) {
@@ -86,6 +87,8 @@ class OrderRepository implements OrderRepositoryInterface {
       return await _getCancelReasons();
     } else if(isRefundReasons) {
       return await _getRefundReasons();
+    } else if(isSupportReasons) {
+      return await _getSupportReasons();
     }
   }
 
@@ -132,6 +135,19 @@ class OrderRepository implements OrderRepositoryInterface {
       }
     }
     return refundReasons;
+  }
+
+  Future<List<String?>?> _getSupportReasons() async {
+    List<String?>? supportReasons;
+    Response response = await apiClient.getData(AppConstants.supportReasonUri);
+    if (response.statusCode == 200) {
+      SupportModel supportModel = SupportModel.fromJson(response.body);
+      supportReasons = [];
+      for (var element in supportModel.data!) {
+        supportReasons.add(element.message);
+      }
+    }
+    return supportReasons;
   }
 
   @override

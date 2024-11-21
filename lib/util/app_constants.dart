@@ -4,20 +4,16 @@ import 'package:sixam_mart/features/language/domain/models/language_model.dart';
 import 'package:sixam_mart/util/images.dart';
 
 class AppConstants {
-  static const String appName = 'MIXMRT';
-  static const double appVersion = 2.8;
+  static const String appName = '6amMart';
+  static const double appVersion = 2.11; ///Flutter Version: 3.24.4
 
   static const String fontFamily = 'Roboto';
   static const bool payInWevView = false;
   static const int balanceInputLen = 10;
-  static const String webHostedUrl = 'https://mixmrt.com/zm';
+  static const String webHostedUrl = 'https://6ammart-web.6amtech.com';
+  static const bool useReactWebsite = false;
 
-  static String baseUrl = 'https://mixmrt.com/zm';
-
-  static void setBaseUrl(String url) {
-    baseUrl = url;
-  }
-
+  static const String baseUrl = 'https://6ammart-admin.6amtech.com';
   static const String categoryUri = '/api/v1/categories';
   static const String bannerUri = '/api/v1/banners';
   static const String storeItemUri = '/api/v1/items/latest';
@@ -69,6 +65,7 @@ class AppConstants {
   static const String storeUri = '/api/v1/stores/get-stores';
   static const String popularStoreUri = '/api/v1/stores/popular';
   static const String latestStoreUri = '/api/v1/stores/latest';
+  static const String topOfferStoreUri = '/api/v1/stores/top-offer-near-me';
   static const String storeDetailsUri = '/api/v1/stores/details/';
   static const String basicCampaignUri = '/api/v1/campaigns/basic';
   static const String itemCampaignUri = '/api/v1/campaigns/item';
@@ -85,12 +82,12 @@ class AppConstants {
   static const String updateZoneUri = '/api/v1/customer/update-zone';
   static const String moduleUri = '/api/v1/module';
   static const String parcelCategoryUri = '/api/v1/parcel-category';
-  static const String aboutUsUri = '/about-us';
-  static const String privacyPolicyUri = '/privacy-policy';
-  static const String termsAndConditionUri = '/terms-and-conditions';
-  static const String cancellationUri = '/cancelation';
-  static const String refundUri = '/refund';
-  static const String shippingPolicyUri = '/shipping-policy';
+  static const String aboutUsUri = '/api/v1/about-us';
+  static const String privacyPolicyUri = '/api/v1/privacy-policy';
+  static const String termsAndConditionUri = '/api/v1/terms-and-conditions';
+  static const String cancellationUri = '/api/v1/cancelation';
+  static const String refundUri = '/api/v1/refund-policy';
+  static const String shippingPolicyUri = '/api/v1/shipping-policy';
   static const String subscriptionUri = '/api/v1/newsletter/subscribe';
   static const String customerRemoveUri = '/api/v1/customer/remove-account';
   static const String walletTransactionUri = '/api/v1/customer/wallet/transactions';
@@ -100,6 +97,7 @@ class AppConstants {
   static const String storeRegisterUri = '/api/v1/auth/vendor/register';
   static const String dmRegisterUri = '/api/v1/auth/delivery-man/store';
   static const String refundReasonUri = '/api/v1/customer/order/refund-reasons';
+  static const String supportReasonUri = '/api/v1/customer/automated-message';
   static const String refundRequestUri = '/api/v1/customer/order/refund-request';
   static const String directionUri = '/api/v1/config/direction-api';
   static const String vehicleListUri = '/api/v1/vehicles/list';
@@ -143,11 +141,12 @@ class AppConstants {
   static const String getCashBackAmountUri = '/api/v1/cashback/getCashback';
   static const String brandListUri = '/api/v1/brand';
   static const String brandItemUri = '/api/v1/brand/items';
-  static String storeDownloadFormUri = '$baseUrl/deliveryman/download-delivery-man-agreement';
-  static String delDownloadFormUri = '$baseUrl/deliveryman/download-delivery-man-agreement';
-  static const String dmAgreement = '/api/v1/show-agreement/dm';
-  static const String storeAgreement = '/api/v1/show-agreement/store';
-  static const String sendWithdrawRequestUri = '/api/v1/customer/req-to-transfer';
+  static const String advertisementListUri = '/api/v1/advertisement/list';
+  static const String searchSuggestionsUri = '/api/v1/items/item-or-store-search';
+  static const String searchPopularCategoriesUri = '/api/v1/categories/popular';
+  static const String firebaseAuthVerify = '/api/v1/auth/firebase-verify-token';
+  static const String personalInformationUri = '/api/v1/auth/update-info';
+  static const String firebaseResetPassword = '/api/v1/auth/firebase-reset-password';
 
   ///Subscription
   static const String businessPlanUri = '/api/v1/vendor/business_plan';
@@ -172,12 +171,15 @@ class AppConstants {
   static const String token = '6ammart_token';
   static const String countryCode = '6ammart_country_code';
   static const String languageCode = '6ammart_language_code';
+  static const String cacheCountryCode = 'cache_country_code';
+  static const String cacheLanguageCode = 'cache_language_code';
   static const String cartList = '6ammart_cart_list';
   static const String userPassword = '6ammart_user_password';
   static const String userAddress = '6ammart_user_address';
   static const String userNumber = '6ammart_user_number';
   static const String userCountryCode = '6ammart_user_country_code';
   static const String notification = '6ammart_notification';
+  static const String notificationIdList = 'notification_id_list';
   static const String searchHistory = '6ammart_search_history';
   static const String intro = '6ammart_intro';
   static const String notificationCount = '6ammart_notification_count';
@@ -250,6 +252,9 @@ class AppConstants {
 
   static List<LanguageModel> languages = [
     LanguageModel(imageUrl: Images.english, languageName: 'English', countryCode: 'US', languageCode: 'en'),
+    LanguageModel(imageUrl: Images.arabic, languageName: 'عربى', countryCode: 'SA', languageCode: 'ar'),
+    LanguageModel(imageUrl: Images.spanish, languageName: 'Spanish', countryCode: 'ES', languageCode: 'es'),
+    LanguageModel(imageUrl: Images.bengali, languageName: 'Bengali', countryCode: 'BN', languageCode: 'bn'),
   ];
 
   static List<String> joinDropdown = [
@@ -284,5 +289,4 @@ class AppConstants {
       'value' : 'CashBack'
     },
   ];
-
 }

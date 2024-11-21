@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:meta_seo/meta_seo.dart';
 import 'package:sixam_mart/features/auth/controllers/auth_controller.dart';
 import 'package:sixam_mart/features/cart/controllers/cart_controller.dart';
 import 'package:sixam_mart/features/language/controllers/language_controller.dart';
@@ -20,7 +21,6 @@ import 'package:sixam_mart/util/app_constants.dart';
 import 'package:sixam_mart/util/messages.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
@@ -31,36 +31,44 @@ import 'helper/get_di.dart' as di;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if(ResponsiveHelper.isMobilePhone()) {
     HttpOverrides.global = MyHttpOverrides();
   }
   setPathUrlStrategy();
-  WidgetsFlutterBinding.ensureInitialized();
+
+  /*///Pass all uncaught "fatal" errors from the framework to Crashlytics
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+
+
+  ///Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };*/
 
   if(GetPlatform.isWeb){
     await Firebase.initializeApp(options: const FirebaseOptions(
-      apiKey: "AIzaSyDwdLNqrd8Is1i_q8BQWxXVbJshwHzAdsg",
-      authDomain: "secret-lambda-403915.firebaseapp.com",
-      projectId: "secret-lambda-403915",
-      storageBucket: "secret-lambda-403915.appspot.com",
-      messagingSenderId: "215254213048",
-      appId: "1:215254213048:web:57383bb9db3677c6556f4d",
-      measurementId: "G-R8QTGD955W",
+        apiKey: "AIzaSyD0Z911mOoWCVkeGdjhIKwWFPRgvd6ZyAw",
+        authDomain: "stackmart-500c7.firebaseapp.com",
+        projectId: "stackmart-500c7",
+        storageBucket: "stackmart-500c7.appspot.com",
+        messagingSenderId: "491987943015",
+        appId: "1:491987943015:web:d8bc7ab8dbc9991c8f1ec2"
     ));
-    MetaSEO().config();
-  }else if(GetPlatform.isAndroid) {
+  } else if(GetPlatform.isAndroid) {
     await Firebase.initializeApp(
       options: const FirebaseOptions(
-        apiKey: "AIzaSyDwdLNqrd8Is1i_q8BQWxXVbJshwHzAdsg",
-        authDomain: "secret-lambda-403915.firebaseapp.com",
-        projectId: "secret-lambda-403915",
-        storageBucket: "secret-lambda-403915.appspot.com",
-        messagingSenderId: "215254213048",
-        appId: "1:215254213048:web:57383bb9db3677c6556f4d",
-        measurementId: "G-R8QTGD955W",
+        apiKey: "AIzaSyCc3OCd5I2xSlnftZ4bFAbuCzMhgQHLivA",
+        appId: "1:491987943015:android:a6fb4303cc4bf3d18f1ec2",
+        messagingSenderId: "491987943015",
+        projectId: "stackmart-500c7",
       ),
     );
-  }else {
+  } else {
     await Firebase.initializeApp();
   }
 
@@ -86,6 +94,8 @@ Future<void> main() async {
       version: "v15.0",
     );
   }
+  handleError();
+
   runApp(MyApp(languages: languages, body: body));
 }
 
@@ -122,18 +132,17 @@ class _MyAppState extends State<MyApp> {
         Get.find<CartController>().getCartDataOnline();
       }
 
-       Get.find<SplashController>().getConfigData(loadLandingData: GetPlatform.isWeb).then((bool isSuccess) async {
-         if (isSuccess) {
-           if (Get.find<AuthController>().isLoggedIn()) {
-             Get.find<AuthController>().updateToken();
-             if(Get.find<SplashController>().module != null) {
-               await Get.find<FavouriteController>().getFavouriteList();
-             }
-           }
-         }
-       });
     }
-
+    Get.find<SplashController>().getConfigData(loadLandingData: GetPlatform.isWeb).then((bool isSuccess) async {
+      if (isSuccess) {
+        if (Get.find<AuthController>().isLoggedIn()) {
+          Get.find<AuthController>().updateToken();
+          if(Get.find<SplashController>().module != null) {
+            await Get.find<FavouriteController>().getFavouriteList();
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -186,4 +195,34 @@ class MyHttpOverrides extends HttpOverrides {
     return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
-//dsf
+
+void handleError() {
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (kDebugMode) {
+      print("Caught an error in a widget: ${details.exceptionAsString()}");
+    }
+    FlutterError.presentError(details);
+  };
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Center(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.error_outline_outlined, color: Colors.red, size: 34),
+        const SizedBox(height: 10),
+
+        const Text(
+          'Oops! Something went wrong.',
+          style: TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 10),
+
+        Text(
+          '${details.exception}',
+          style: const TextStyle(color: Colors.red),
+          textAlign: TextAlign.center,
+        ),
+      ]),
+    );
+  };
+}

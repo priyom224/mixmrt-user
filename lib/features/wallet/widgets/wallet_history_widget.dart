@@ -94,7 +94,7 @@ class WalletHistoryWidget extends StatelessWidget {
             ),
             physics:  const NeverScrollableScrollPhysics(),
             shrinkWrap:  true,
-            itemCount: walletController.transactionList!.length ,
+            itemCount: walletController.transactionList!.length,
             padding: EdgeInsets.only(top: ResponsiveHelper.isDesktop(context) ? 28 : 25),
             itemBuilder: (context, index) {
               return HistoryItemWidget(index: index, fromWallet: true, data: walletController.transactionList);
@@ -142,14 +142,14 @@ class WalletShimmer extends StatelessWidget {
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(height: 10, width: 50, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                    Container(height: 10, width: 50, decoration: BoxDecoration(color: Theme.of(context).shadowColor, borderRadius: BorderRadius.circular(2))),
                     const SizedBox(height: 10),
-                    Container(height: 10, width: 70, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                    Container(height: 10, width: 70, decoration: BoxDecoration(color: Theme.of(context).shadowColor, borderRadius: BorderRadius.circular(2))),
                   ]),
                   Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Container(height: 10, width: 50, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                    Container(height: 10, width: 50, decoration: BoxDecoration(color: Theme.of(context).shadowColor, borderRadius: BorderRadius.circular(2))),
                     const SizedBox(height: 10),
-                    Container(height: 10, width: 70, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                    Container(height: 10, width: 70, decoration: BoxDecoration(color: Theme.of(context).shadowColor, borderRadius: BorderRadius.circular(2))),
                   ]),
                 ],
               ),

@@ -13,6 +13,7 @@ import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
 import 'package:sixam_mart/util/dimensions.dart';
+import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/util/styles.dart';
 import 'package:sixam_mart/common/widgets/custom_dropdown.dart';
 import 'package:sixam_mart/common/widgets/custom_text_field.dart';
@@ -27,12 +28,12 @@ class ParcelViewWidget extends StatefulWidget {
   final TextEditingController streetController;
   final TextEditingController houseController;
   final TextEditingController floorController;
-  final TextEditingController? weightController;
+  final TextEditingController? guestEmailController;
   final String? countryCode;
-  final bool? weight;
 
   const ParcelViewWidget({super.key, required this.isSender, required this.nameController, required this.phoneController,
-    required this.streetController, required this.houseController, required this.floorController, required this.bottomButton, required this.countryCode, this.weight, this.weightController});
+    required this.streetController, required this.houseController, required this.floorController, required this.bottomButton, required this.countryCode,
+    this.guestEmailController});
 
   @override
   State<ParcelViewWidget> createState() => _ParcelViewWidgetState();
@@ -44,7 +45,7 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
   final FocusNode floorNode = FocusNode();
   final FocusNode nameNode = FocusNode();
   final FocusNode phoneNode = FocusNode();
-  final FocusNode weightNode = FocusNode();
+  final FocusNode guestEmailNode = FocusNode();
   String? _countryCode;
   String? _addressCountryCode;
 
@@ -99,6 +100,7 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                                         id: address.id, addressType: address.addressType, contactPersonNumber: address.contactPersonNumber, contactPersonName: address.contactPersonName,
                                         address: address.address, latitude: address.latitude, longitude: address.longitude, zoneId: responseModel.isSuccess ? responseModel.zoneIds[0] : 0,
                                         zoneIds: address.zoneIds, method: address.method, streetNumber: address.streetNumber, house: address.house, floor: address.floor,
+                                        zoneData: responseModel.zoneData,
                                       );
 
                                       if(parcelController.isPickedUp!) {
@@ -119,6 +121,7 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                                       id: address.id, addressType: address.addressType, contactPersonNumber: address.contactPersonNumber, contactPersonName: address.contactPersonName,
                                       address: address.address, latitude: address.latitude, longitude: address.longitude, zoneId: responseModel.isSuccess ? responseModel.zoneIds[0] : 0,
                                       zoneIds: responseModel.zoneIds, method: address.method, streetNumber: address.streetNumber, house: address.house, floor: address.floor,
+                                      zoneData: responseModel.zoneData,
                                     );
                                     parcelController.setPickupAddress(pickupAddress, true);
                                     parcelController.setSenderAddressIndex(0);
@@ -128,6 +131,7 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                                       id: address.id, addressType: address.addressType, contactPersonNumber: address.contactPersonNumber, contactPersonName: address.contactPersonName,
                                       address: address.address, latitude: address.latitude, longitude: address.longitude, zoneId: responseModel.isSuccess ? responseModel.zoneIds[0] : 0,
                                       zoneIds: responseModel.zoneIds, method: address.method, streetNumber: address.streetNumber, house: address.house, floor: address.floor,
+                                      zoneData: responseModel.zoneData,
                                     );
                                     parcelController.setDestinationAddress(a);
                                     parcelController.setReceiverAddressIndex(0);
@@ -151,18 +155,32 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                             onChange: (int? value, int index) async {
 
                               if(parcelController.isSender){
-                                parcelController.setPickupAddress(senderAddress[index], true);
+                                ZoneResponseModel responseModel = await Get.find<LocationController>().getZone(senderAddress[index].latitude.toString(), senderAddress[index].longitude.toString(), false);
+                                AddressModel pickupAddress = AddressModel(
+                                  id: senderAddress[index].id, addressType: senderAddress[index].addressType, contactPersonNumber: senderAddress[index].contactPersonNumber, contactPersonName: senderAddress[index].contactPersonName,
+                                  address: senderAddress[index].address, latitude: senderAddress[index].latitude, longitude: senderAddress[index].longitude, zoneId: responseModel.isSuccess ? responseModel.zoneIds[0] : 0,
+                                  zoneIds: responseModel.zoneIds, method: senderAddress[index].method, streetNumber: senderAddress[index].streetNumber, house: senderAddress[index].house, floor: senderAddress[index].floor,
+                                  zoneData: responseModel.zoneData,
+                                );
+                                parcelController.setPickupAddress(pickupAddress, true);
                                 parcelController.setSenderAddressIndex(index);
                                 widget.streetController.text = senderAddress[index].streetNumber ?? '';
                                 widget.houseController.text = senderAddress[index].house ?? '';
                                 widget.floorController.text = senderAddress[index].floor ?? '';
                                 widget.nameController.text = senderAddress[index].contactPersonName ?? '';
                                 await _splitPhoneNumber(senderAddress[index].contactPersonNumber??'');
-                                parcelController.setCountryCode(_addressCountryCode!, true);
+                                parcelController.setCountryCode(_addressCountryCode?? _countryCode!, true);
 
                                 // widget.phoneController.text = senderAddress[index].contactPersonNumber ?? '';
                               }else{
-                                parcelController.setDestinationAddress(receiverAddress[index]);
+                                ZoneResponseModel responseModel = await Get.find<LocationController>().getZone(receiverAddress[index].latitude.toString(), receiverAddress[index].longitude.toString(), false);
+                                AddressModel a = AddressModel(
+                                  id: receiverAddress[index].id, addressType: receiverAddress[index].addressType, contactPersonNumber: receiverAddress[index].contactPersonNumber, contactPersonName: receiverAddress[index].contactPersonName,
+                                  address: receiverAddress[index].address, latitude: receiverAddress[index].latitude, longitude: receiverAddress[index].longitude, zoneId: responseModel.isSuccess ? responseModel.zoneIds[0] : 0,
+                                  zoneIds: responseModel.zoneIds, method: receiverAddress[index].method, streetNumber: receiverAddress[index].streetNumber, house: receiverAddress[index].house, floor: receiverAddress[index].floor,
+                                  zoneData: responseModel.zoneData,
+                                );
+                                parcelController.setDestinationAddress(a);
                                 parcelController.setReceiverAddressIndex(index);
                                 widget.streetController.text = receiverAddress[index].streetNumber ?? '';
                                 widget.houseController.text = receiverAddress[index].house ?? '';
@@ -271,9 +289,8 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                           labelText: parcelController.isSender ? 'sender_phone_number'.tr : 'receiver_phone_number'.tr,
                           controller: widget.phoneController,
                           focusNode: phoneNode,
-                          nextFocus: weightNode,
                           inputType: TextInputType.phone,
-                          inputAction: TextInputAction.done,
+                          inputAction: AuthHelper.isGuestLoggedIn() ? TextInputAction.next : TextInputAction.done,
                           isPhone: true,
                           onCountryChanged: (CountryCode countryCode) {
                             countryDialCode = countryCode.dialCode;
@@ -281,31 +298,23 @@ class _ParcelViewWidgetState extends State<ParcelViewWidget> {
                           },
                           countryDialCode: countryDialCode ?? _countryCode,
                         ),
+                        SizedBox(height: AuthHelper.isGuestLoggedIn() ? Dimensions.paddingSizeLarge : 0),
+
+                        AuthHelper.isGuestLoggedIn() ? CustomTextField(
+                          titleText: parcelController.isSender ? 'sender_email'.tr : 'receiver_email'.tr,
+                          labelText: parcelController.isSender ? 'sender_email'.tr : 'receiver_email'.tr,
+                          controller: widget.guestEmailController,
+                          inputType: TextInputType.emailAddress,
+                          focusNode: guestEmailNode,
+                          prefixImage: Images.mail,
+                          inputAction: TextInputAction.done,
+                        ) : const SizedBox(),
+
+                        const SizedBox(height: Dimensions.paddingSizeDefault),
+
                       ]),
                     ),
 
-                    widget.weight == true ? Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor,
-                      ),
-                      padding: const EdgeInsets.all(Dimensions.paddingSizeSmall),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        const SizedBox(height: Dimensions.paddingSizeSmall),
-
-                        Text('parcel_information'.tr, style: robotoMedium),
-                        const SizedBox(height: Dimensions.paddingSizeDefault),
-
-                        CustomTextField(
-                          showTitle: isDesktop,
-                          hintText: 'weight'.tr,
-                          titleText: 'weight'.tr,
-                          inputType: TextInputType.number,
-                          focusNode: weightNode,
-                          controller: widget.weightController,
-                        ),
-                        const SizedBox(height: Dimensions.paddingSizeDefault),
-                      ]),
-                    ) : const SizedBox(),
                     ResponsiveHelper.isDesktop(context) ? Padding(
                       padding: EdgeInsets.symmetric(vertical: Dimensions.fontSizeSmall),
                       child: widget.bottomButton,

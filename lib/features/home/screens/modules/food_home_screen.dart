@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:sixam_mart/common/controllers/theme_controller.dart';
+import 'package:sixam_mart/features/home/widgets/highlight_widget.dart';
 import 'package:sixam_mart/features/home/widgets/views/category_view.dart';
+import 'package:sixam_mart/features/home/widgets/views/top_offers_near_me.dart';
 import 'package:sixam_mart/helper/auth_helper.dart';
 import 'package:sixam_mart/util/images.dart';
 import 'package:sixam_mart/features/home/widgets/bad_weather_widget.dart';
@@ -23,7 +27,7 @@ class FoodHomeScreen extends StatelessWidget {
 
       Container(
         width: MediaQuery.of(context).size.width,
-        decoration: const BoxDecoration(
+        decoration: Get.find<ThemeController>().darkTheme ? null : const BoxDecoration(
           image: DecorationImage(
             image: AssetImage(Images.foodModuleBannerBg),
             fit: BoxFit.cover,
@@ -42,6 +46,8 @@ class FoodHomeScreen extends StatelessWidget {
       const CategoryView(),
       isLoggedIn ? const VisitAgainView(fromFood: true) : const SizedBox(),
       const SpecialOfferView(isFood: true, isShop: false),
+      const HighlightWidget(),
+      const TopOffersNearMe(),
       const BestReviewItemView(),
       const BestStoreNearbyView(),
       const ItemThatYouLoveView(forShop: false),

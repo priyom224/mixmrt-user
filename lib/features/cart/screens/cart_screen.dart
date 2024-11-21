@@ -11,6 +11,7 @@ import 'package:sixam_mart/features/store/controllers/store_controller.dart';
 import 'package:sixam_mart/features/cart/domain/models/cart_model.dart';
 import 'package:sixam_mart/features/item/domain/models/item_model.dart';
 import 'package:sixam_mart/features/store/domain/models/store_model.dart';
+import 'package:sixam_mart/helper/module_helper.dart';
 import 'package:sixam_mart/helper/price_converter.dart';
 import 'package:sixam_mart/helper/responsive_helper.dart';
 import 'package:sixam_mart/helper/route_helper.dart';
@@ -45,6 +46,10 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   final ScrollController scrollController = ScrollController();
   GlobalKey<ExpandableBottomSheetState> key = GlobalKey();
+
+  final GlobalKey _widgetKey = GlobalKey();
+  double _height = 0;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +59,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Future<void> initCall() async {
+    _initialBottomSheetShowHide();
     if(Get.find<CartController>().cartList.isEmpty) {
       await Get.find<CartController>().getCartDataOnline();
     }
@@ -61,19 +67,40 @@ class _CartScreenState extends State<CartScreen> {
       if (kDebugMode) {
         print('----cart item : ${Get.find<CartController>().cartList[0].toJson()}');
       }
+
       if(Get.find<CartController>().addCutlery){
         Get.find<CartController>().updateCutlery(willUpdate: false);
       }
       if(Get.find<CartController>().needExtraPackage){
         Get.find<CartController>().toggleExtraPackage(willUpdate: false);
       }
-      print('====here ====1 calling====');
       Get.find<CartController>().setAvailableIndex(-1, willUpdate: false);
       Get.find<StoreController>().getCartStoreSuggestedItemList(Get.find<CartController>().cartList[0].item!.storeId);
       Get.find<StoreController>().getStoreDetails(Store(id: Get.find<CartController>().cartList[0].item!.storeId, name: null), false, fromCart: true);
       Get.find<CartController>().calculationCart();
       showReferAndEarnSnackBar();
     }
+  }
+
+  void _initialBottomSheetShowHide() {
+    Future.delayed(const Duration(milliseconds: 600), () {
+      key.currentState!.expand();
+      Future.delayed(const Duration(seconds: 3), () {
+        setState(() {
+          key.currentState!.contract();
+        });
+      });
+
+    });
+  }
+
+  void _getExpandedBottomSheetHeight() {
+    final RenderBox renderBox = _widgetKey.currentContext?.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
+    setState(() {
+      _height = size.height;
+    });
   }
 
   @override
@@ -190,16 +217,37 @@ class _CartScreenState extends State<CartScreen> {
                             ),
 
                             ResponsiveHelper.isDesktop(context) ? WebSuggestedItemViewWidget(cartList: cartController.cartList) : const SizedBox(),
+                            const SizedBox(height: Dimensions.paddingSizeExtraOverLarge),
+
                           ]),
                         ),
                       ),
                     ),
                   ),
 
+                  SizedBox(height: _height),
+
                 ]),
+
+                onIsExtendedCallback: () {
+                  ///Don't remove this print.
+                  print('======= expandableContent open');
+                  _getExpandedBottomSheetHeight();
+                  // setState(() {
+                  //   _height = 100;
+                  // });
+                },
+                onIsContractedCallback: () {
+                  ///Don't remove this print.
+                  print('======= expandableContent close');
+                  setState(() {
+                    _height = 0;
+                  });
+                },
 
                 expandableContent: isDesktop ? const SizedBox() : Container(
                   width: context.width,
+                  key: _widgetKey,
                   decoration: BoxDecoration(
                     color: Theme.of(context).cardColor,
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(Dimensions.radiusDefault), topRight: Radius.circular(Dimensions.radiusDefault)),
@@ -218,13 +266,17 @@ class _CartScreenState extends State<CartScreen> {
                           Text('item_price'.tr, style: robotoRegular),
                           PriceConverter.convertAnimationPrice(cartController.itemPrice, textStyle: robotoRegular),
                         ]),
-                        SizedBox(height: cartController.variationPrice > 0 ? Dimensions.paddingSizeSmall : 0),
+                        SizedBox(height: cartController.variationPrice > 0 && ModuleHelper.getModuleConfig(cartController.cartList.first.item!.moduleType).newVariation!
+                            ? Dimensions.paddingSizeSmall : 0),
 
-                        cartController.variationPrice > 0 ? Row(
+                        cartController.variationPrice > 0 && ModuleHelper.getModuleConfig(cartController.cartList.first.item!.moduleType).newVariation! ? Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('variations'.tr, style: robotoRegular),
-                            Text('(+) ${PriceConverter.convertPrice(cartController.variationPrice)}', style: robotoRegular, textDirection: TextDirection.ltr),
+                            Text(
+                              '(+) ${PriceConverter.convertPrice(cartController.variationPrice)}',
+                              style: robotoRegular, textDirection: TextDirection.ltr,
+                            ),
                           ],
                         ) : const SizedBox(),
                         const SizedBox(height: Dimensions.paddingSizeSmall),
@@ -583,10 +635,14 @@ class CheckoutButton extends StatelessWidget {
                   children: [
                     InkWell(
                       onTap: (){
+                        if(ResponsiveHelper.isDesktop(context)) {
+                          Get.dialog(const Dialog(child: NotAvailableBottomSheetWidget()));
+                        } else {
                           showModalBottomSheet(
                             context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
                             builder: (con) => const NotAvailableBottomSheetWidget(),
                           );
+                        }
                       },
                       child: Row(children: [
                         Expanded(child: Text('if_any_product_is_not_available'.tr, style: robotoMedium, maxLines: 2, overflow: TextOverflow.ellipsis)),
@@ -609,12 +665,11 @@ class CheckoutButton extends StatelessWidget {
 
               SafeArea(
                 child: CustomButton(
-                  buttonText: 'proceed_to_checkout'.tr,
+                  buttonText: 'confirm_delivery_details'.tr,
                   fontSize: ResponsiveHelper.isDesktop(context) ? Dimensions.fontSizeSmall : Dimensions.fontSizeLarge,
                   isBold:  ResponsiveHelper.isDesktop(context) ? false : true,
                   radius: ResponsiveHelper.isDesktop(context) ? Dimensions.radiusSmall : Dimensions.radiusDefault,
                   onPressed: () {
-                    print('====fff===> ${cartController.notAvailableIndex}');
                   if(!cartController.cartList.first.item!.scheduleOrder! && availableList.contains(false)) {
                     showCustomSnackBar('one_or_more_product_unavailable'.tr);
                   } /*else if(AuthHelper.isGuestLoggedIn() && !Get.find<SplashController>().configModel!.guestCheckoutStatus!) {

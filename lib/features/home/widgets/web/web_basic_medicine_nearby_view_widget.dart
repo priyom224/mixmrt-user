@@ -68,7 +68,7 @@ class _WebBasicMedicineNearbyViewWidgetState extends State<WebBasicMedicineNearb
           if(selectedCategory == 0) {
             products.add(product);
           }
-          if(categories[selectedCategory].id == product.categoryId){
+          if (product.categoryIds!.any((category) => category.id == categories[selectedCategory].id)) {
             products.add(product);
           }
         }
@@ -190,7 +190,7 @@ class MedicineCardShimmer extends StatelessWidget {
               duration: const Duration(seconds: 2),
               enabled: true,
               child: Container(
-                width: ResponsiveHelper.isDesktop(context) ? 200 : 160, height: ResponsiveHelper.isDesktop(context) ? 250 : 200,
+                width: ResponsiveHelper.isDesktop(context) ? 200 : 180, height: ResponsiveHelper.isDesktop(context) ? 250 : 220,
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
                   borderRadius: const BorderRadius.all(Radius.circular(Dimensions.radiusSmall)),

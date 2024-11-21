@@ -96,9 +96,6 @@ class OrderModel {
   double? flashStoreDiscountAmount;
   double? extraPackagingAmount;
   double? referrerBonusAmount;
-  bool? thirdParty;
-  DeliveryCompany? deliveryCompany;
-  String? weight;
 
   OrderModel(
       {this.id,
@@ -161,9 +158,6 @@ class OrderModel {
         this.flashStoreDiscountAmount,
         this.extraPackagingAmount,
         this.referrerBonusAmount,
-        this.thirdParty,
-        this.deliveryCompany,
-        this.weight
       });
 
   OrderModel.fromJson(Map<String, dynamic> json) {
@@ -236,7 +230,9 @@ class OrderModel {
     if(json['order_proof_full_url'] != null){
       orderProofFullUrl = [];
       json['order_proof_full_url'].forEach((v) {
-        orderProofFullUrl!.add(v);
+        if(v != null) {
+          orderProofFullUrl!.add(v.toString());
+        }
       });
     }
     offlinePayment = json['offline_payment'] != null ? OfflinePayment.fromJson(json['offline_payment']) : null;
@@ -244,10 +240,6 @@ class OrderModel {
     flashStoreDiscountAmount = json['flash_store_discount_amount']?.toDouble();
     extraPackagingAmount = json['extra_packaging_amount']?.toDouble();
     referrerBonusAmount = json['ref_bonus_amount']?.toDouble();
-    thirdParty = json['third_party'];
-    weight = json['weight'];
-    deliveryCompany = json['delivery_company'] != null ?
-    DeliveryCompany.fromJson(json['delivery_company']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -326,9 +318,6 @@ class OrderModel {
     data['flash_store_discount_amount'] = flashStoreDiscountAmount;
     data['extra_packaging_amount'] = extraPackagingAmount;
     data['ref_bonus_amount'] = referrerBonusAmount;
-    data['third_party'] = thirdParty;
-    data['delivery_company'] = deliveryCompany;
-    data['weight'] = weight;
     return data;
   }
 }
@@ -540,49 +529,6 @@ class MethodFields {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['input_name'] = inputName;
     data['input_data'] = inputData;
-    return data;
-  }
-}
-
-class DeliveryCompany {
-  int? id;
-  int? orderId;
-  String? companyName;
-  String? trackingUrl;
-  String? serialNumber;
-  String? createdAt;
-  String? updatedAt;
-
-  DeliveryCompany({
-    required this.id,
-    required this.orderId,
-    required this.companyName,
-    required this.trackingUrl,
-    required this.serialNumber,
-    required this.createdAt,
-    required this.updatedAt,
-  });
-
-  DeliveryCompany.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    orderId = json['order_id'];
-    companyName = json['company_name'];
-    trackingUrl = json['tracking_url'];
-    serialNumber = json['serial_number'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-  }
-
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['order_id'] = orderId;
-    data['company_name'] = companyName;
-    data['tracking_url'] = trackingUrl;
-    data['serial_number'] = serialNumber;
-    data['created_at'] = createdAt;
-    data['updated_at'] = updatedAt;
     return data;
   }
 }

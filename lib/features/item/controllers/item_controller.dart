@@ -310,9 +310,8 @@ class ItemController extends GetxController implements GetxService {
       _quantity = 1;
       _addOnActiveList.addAll(itemServiceInterface.initializeAddonActiveList(item.addOns));
       _addOnQtyList.addAll(itemServiceInterface.initializeAddonQtyList(item.addOns));
-      print('====here ====== 1 ');
 
-      setExistInCart(item, _selectedVariations, notify: false);
+      setExistInCart(item, _selectedVariations, notify: true);
     }
 
   }
@@ -321,12 +320,11 @@ class ItemController extends GetxController implements GetxService {
     _cartIndex = -1;
   }
 
-  int setExistInCart(Item? item, List<List<bool?>>? selectedVariations, {bool notify = false}) {
-    String variationType = itemServiceInterface.prepareVariationType(item!.choiceOptions, _variationIndex);
+  Future<int> setExistInCart(Item? item, List<List<bool?>>? selectedVariations, {bool notify = false}) async {
+    String variationType = await itemServiceInterface.prepareVariationType(item!.choiceOptions, _variationIndex);
 
     if(ModuleHelper.getModuleConfig(ModuleHelper.getModule() != null ? ModuleHelper.getModule()!.moduleType : ModuleHelper.getCacheModule()!.moduleType).newVariation!) {
-      _cartIndex = itemServiceInterface.isExistInCartForBottomSheet(Get.find<CartController>().cartList, item.id, null, selectedVariations);
-      // _cartIndex = -1;
+      _cartIndex = await itemServiceInterface.isExistInCartForBottomSheet(Get.find<CartController>().cartList, item.id, null, selectedVariations);
     } else {
       _cartIndex = Get.find<CartController>().isExistInCart(item.id, variationType, false, null);
     }
@@ -349,8 +347,8 @@ class ItemController extends GetxController implements GetxService {
     update();
   }
 
-  void setQuantity(bool isIncrement, int? stock,  int? quantityLimit, {bool getxSnackBar = false}) {
-    _quantity = itemServiceInterface.setQuantity(isIncrement, Get.find<SplashController>().configModel!.moduleConfig!.module!.stock!, stock, _quantity!, quantityLimit, getxSnackBar: getxSnackBar);
+  Future<void> setQuantity(bool isIncrement, int? stock,  int? quantityLimit, {bool getxSnackBar = false}) async {
+    _quantity = await itemServiceInterface.setQuantity(isIncrement, Get.find<SplashController>().configModel!.moduleConfig!.module!.stock!, stock, _quantity!, quantityLimit, getxSnackBar: getxSnackBar);
     update();
   }
 
@@ -443,7 +441,7 @@ class ItemController extends GetxController implements GetxService {
         Dialog(child: ItemBottomSheet(item: item, inStorePage: inStore, isCampaign: isCampaign)),
       );
     }else {
-      Get.toNamed(RouteHelper.getItemDetailsRoute(item.id, inStore), arguments: ItemDetailsScreen(item: item, inStorePage: inStore));
+      Get.toNamed(RouteHelper.getItemDetailsRoute(item.id, inStore), arguments: ItemDetailsScreen(item: item, inStorePage: inStore, isCampaign: isCampaign));
     }
   }
 

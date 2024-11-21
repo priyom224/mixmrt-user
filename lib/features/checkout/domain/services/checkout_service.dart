@@ -80,7 +80,7 @@ class CheckoutService implements CheckoutServiceInterface {
 
     DateTime now = DateTime.now();
     if(orderPlaceToScheduleInterval!) {
-      now = now.add(Duration(minutes: interval!));
+      now = now.add(Duration(minutes: interval ?? 30));
     }
     int day = 0;
     if(dateIndex == 0) {
@@ -105,8 +105,8 @@ class CheckoutService implements CheckoutServiceInterface {
   }
 
   @override
-  Future<double> getExtraCharge(double? weight) async {
-    return await checkoutRepositoryInterface.getExtraCharge(weight);
+  Future<double> getExtraCharge(double? distance) async {
+    return await checkoutRepositoryInterface.getExtraCharge(distance);
   }
 
   @override

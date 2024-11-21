@@ -1,7 +1,8 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sixam_mart/features/business/controllers/business_controller.dart';
+import 'package:sixam_mart/features/business/domain/models/package_model.dart';
 import 'package:sixam_mart/features/home/controllers/home_controller.dart';
 import 'package:sixam_mart/features/location/controllers/location_controller.dart';
 import 'package:sixam_mart/features/location/domain/services/location_service_interface.dart';
@@ -52,14 +53,6 @@ class StoreRegistrationController extends GetxController implements GetxService 
   bool _showPassView = false;
   bool get showPassView => _showPassView;
 
-  XFile? _pickedTax;
-  XFile? _pickedRegistration;
-  XFile? _pickedAgreement;
-
-  XFile? get pickedTax => _pickedTax;
-  XFile? get pickedRegistration => _pickedRegistration;
-  XFile? get pickedAgreement => _pickedAgreement;
-
   String? _storeAddress;
   String? get storeAddress => _storeAddress;
 
@@ -90,13 +83,23 @@ class StoreRegistrationController extends GetxController implements GetxService 
   bool _inZone = false;
   bool get inZone => _inZone;
 
-  bool _acceptTerms = true;
-  bool get acceptTerms => _acceptTerms;
+  int _businessIndex = 0;
+  int get businessIndex => _businessIndex;
 
-  void toggleTerms() {
-    _acceptTerms = !_acceptTerms;
-    update();
-  }
+  int _activeSubscriptionIndex = 0;
+  int get activeSubscriptionIndex => _activeSubscriptionIndex;
+
+  String _businessPlanStatus = 'business';
+  String get businessPlanStatus => _businessPlanStatus;
+
+  int _paymentIndex = 0;
+  int get paymentIndex => _paymentIndex;
+
+  String? _digitalPaymentName;
+  String? get digitalPaymentName => _digitalPaymentName;
+
+  PackageModel? _packageModel;
+  PackageModel? get packageModel => _packageModel;
 
   void showHidePass({bool isUpdate = true}){
     _showPassView = ! _showPassView;
@@ -187,9 +190,6 @@ class StoreRegistrationController extends GetxController implements GetxService 
   }
 
   Future<void> getZoneList() async {
-    _pickedTax = null;
-    _pickedRegistration = null;
-    _pickedAgreement = null;
     _pickedLogo = null;
     _pickedCover = null;
     _selectedZoneIndex = -1;
@@ -261,37 +261,65 @@ class StoreRegistrationController extends GetxController implements GetxService 
   Future<void> registerStore(StoreBodyModel storeBody) async {
     _isLoading = true;
     update();
-    Response? response = await storeRegistrationServiceInterface.registerStore(storeBody, _pickedLogo, _pickedCover, _pickedTax, _pickedRegistration);
+    Response? response = await storeRegistrationServiceInterface.registerStore(storeBody, _pickedLogo, _pickedCover);
     if(response.statusCode == 200) {
       Get.find<HomeController>().saveRegistrationSuccessfulSharedPref(true);
       int? storeId = response.body['store_id'];
-      Get.offAllNamed(RouteHelper.getBusinessPlanRoute(storeId));
+      int? packageId = response.body['package_id'];
+      if(packageId == null) {
+        Get.find<BusinessController>().submitBusinessPlan(storeId: storeId!, packageId: null);
+      } else {
+        Get.toNamed(RouteHelper.getSubscriptionPaymentRoute(
+          storeId: storeId,
+          packageId: packageId,
+        ));
+      }
+      // Get.offAllNamed(RouteHelper.getBusinessPlanRoute(storeId, packageId));
     }
     _isLoading = false;
     update();
   }
 
-  void pickTax() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles( type: FileType.custom, allowedExtensions: ['png','jpg','jpeg','pdf','doc','docx','gif','txt','pptx','xlsx']);
-    if (result != null) {
-      _pickedTax = XFile(result.files.single.path!);
+  void resetBusiness(){
+    _businessIndex = Get.find<SplashController>().configModel!.commissionBusinessModel == 0 ? 1 : 0;
+    _activeSubscriptionIndex = 0;
+    _businessPlanStatus = 'business';
+    // _isFirstTime = true;
+    _paymentIndex = Get.find<SplashController>().configModel!.subscriptionFreeTrialStatus??false ? 1 : 0;
+  }
+
+  Future<void> getPackageList({bool isUpdate = true}) async {
+    _packageModel = await storeRegistrationServiceInterface.getPackageList();
+    if(isUpdate) {
+      update();
     }
+  }
+
+  void changeDigitalPaymentName(String? name, {bool canUpdate = true}){
+    _digitalPaymentName = name;
+    if(canUpdate) {
+      update();
+    }
+  }
+
+  void setPaymentIndex(int index){
+    _paymentIndex = index;
     update();
   }
 
-  void pickRegistration() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles( type: FileType.custom, allowedExtensions: ['png','jpg','jpeg','pdf','doc','docx','gif','txt','pptx','xlsx']);
-    if (result != null) {
-      _pickedRegistration = XFile(result.files.single.path!);
-    }
+  void setBusiness(int business){
+    _activeSubscriptionIndex = 0;
+    _businessIndex = business;
     update();
   }
 
-  void pickAgreement() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles( type: FileType.custom, allowedExtensions: ['png','jpg','jpeg','pdf','doc','docx','gif','txt','pptx','xlsx']);
-    if (result != null) {
-      _pickedAgreement = XFile(result.files.single.path!);
-    }
+  void setBusinessStatus(String status){
+    _businessPlanStatus = status;
+    update();
+  }
+
+  void selectSubscriptionCard(int index){
+    _activeSubscriptionIndex = index;
     update();
   }
 

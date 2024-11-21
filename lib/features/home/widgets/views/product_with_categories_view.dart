@@ -26,7 +26,7 @@ class _ProductWithCategoriesViewState extends State<ProductWithCategoriesView> {
     return GetBuilder<ItemController>(builder: (itemController) {
       List<Categories>? categories = [];
       List<Item>? products = [];
-      if(widget.fromShop ? itemController.reviewedCategoriesList != null && itemController.reviewedItemList !=null : itemController.basicMedicineModel != null){
+      if(widget.fromShop ? itemController.reviewedCategoriesList != null && itemController.reviewedItemList != null : itemController.basicMedicineModel != null){
         categories.add(Categories(name: 'all'.tr, id: 0));
         for (var category in widget.fromShop ? itemController.reviewedCategoriesList! : itemController.basicMedicineModel!.categories!) {
           categories.add(category);
@@ -35,7 +35,7 @@ class _ProductWithCategoriesViewState extends State<ProductWithCategoriesView> {
           if(selectedCategory == 0) {
             products.add(product);
           }
-          if(categories[selectedCategory].id == product.categoryId){
+          if(categories[selectedCategory].id == product.categoryIds?[0].id){
             products.add(product);
           }
         }
@@ -103,7 +103,7 @@ class _ProductWithCategoriesViewState extends State<ProductWithCategoriesView> {
                 color: widget.fromShop ? Theme.of(context).disabledColor.withOpacity(0.1) : Theme.of(context).primaryColor.withOpacity(0.1),
               ),
               child: SizedBox(
-                height: ResponsiveHelper.isDesktop(context) ? widget.fromShop ? 290 : 260 : widget.fromShop ? 292 : 247, width: Get.width,
+                height: ResponsiveHelper.isDesktop(context) ? widget.fromShop ? 290 : 260 : widget.fromShop ? 292 : 250, width: Get.width,
                 child: (widget.fromShop ? itemController.reviewedCategoriesList != null : itemController.basicMedicineModel != null) ? ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
